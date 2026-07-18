@@ -1,0 +1,19 @@
+{
+  "name": "Drei Mann – Trinkspiel",
+  "short_name": "Drei Mann",
+  "description": "Das Würfel-Trinkspiel mit Statistik",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#160C05",
+  "theme_color": "#160C05",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

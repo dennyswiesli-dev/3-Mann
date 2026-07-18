@@ -3,19 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#160C05">
 <title>Drei Mann – Trinkspiel</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Barlow:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --stout:#160C05;          /* dunkles Stout */
+  --stout:#160C05;
   --wood:#241207;
   --card:#2E1A0C;
   --card-line:#4A2D14;
-  --foam:#FFF6E0;           /* Schaum */
+  --foam:#FFF6E0;
   --foam-dim:#CBB794;
-  --beer:#F5A623;           /* Bier-Gold */
+  --beer:#F5A623;
   --beer-deep:#C97E12;
   --red:#D64533;
   --ink:#241E17;
@@ -28,18 +32,16 @@ body{
   color:var(--foam);
   min-height:100vh;
   padding-bottom:70px;
-  background:
-    radial-gradient(ellipse 120% 60% at 50% 0%, #3A1E0C 0%, var(--wood) 45%, var(--stout) 100%);
+  background:radial-gradient(ellipse 120% 60% at 50% 0%, #3A1E0C 0%, var(--wood) 45%, var(--stout) 100%);
   overflow-x:hidden;
 }
 
-/* ---------- Bier-Bläschen im Hintergrund ---------- */
+/* ---------- Bläschen ---------- */
 .bubbles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
 .bubble{
   position:absolute;bottom:-60px;border-radius:50%;
   background:radial-gradient(circle at 35% 30%, rgba(255,246,224,.55), rgba(245,166,35,.18) 60%, transparent 75%);
-  animation:rise linear infinite;
-  opacity:0;
+  animation:rise linear infinite;opacity:0;
 }
 @keyframes rise{
   0%{transform:translateY(0) translateX(0);opacity:0}
@@ -49,37 +51,40 @@ body{
 }
 .wrap{max-width:520px;margin:0 auto;padding:0 16px;position:relative;z-index:1}
 
-/* ---------- Kopf mit Schaumkrone ---------- */
+/* ---------- Konfetti ---------- */
+.confetti-box{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden}
+.confetti{
+  position:absolute;top:-20px;width:10px;height:14px;border-radius:2px;
+  animation:fall 1.6s ease-in forwards;
+}
+@keyframes fall{
+  0%{transform:translateY(0) rotate(0);opacity:1}
+  100%{transform:translateY(105vh) rotate(720deg);opacity:.4}
+}
+
+/* ---------- Kopf ---------- */
 header{padding:30px 0 8px;text-align:center;position:relative}
 .krug{font-size:34px;display:inline-block;transform:rotate(-8deg);filter:drop-shadow(0 3px 4px rgba(0,0,0,.5))}
 .krug.r{transform:rotate(8deg) scaleX(-1)}
 .stamp{
-  display:inline-block;
-  font-family:'Alfa Slab One',serif;
-  font-size:clamp(36px,10vw,50px);
-  line-height:1;
-  color:var(--foam);
-  padding:6px 14px 4px;
-  transform:rotate(-2deg);
-  letter-spacing:1px;
+  display:inline-block;font-family:'Alfa Slab One',serif;
+  font-size:clamp(36px,10vw,50px);line-height:1;color:var(--foam);
+  padding:6px 14px 4px;transform:rotate(-2deg);letter-spacing:1px;
   text-shadow:0 4px 0 rgba(0,0,0,.45), 0 0 30px rgba(245,166,35,.35);
   margin:0 6px;
 }
 .stamp span{
-  color:var(--beer);
   background:linear-gradient(180deg, var(--foam) -20%, var(--beer) 35%, var(--beer-deep) 100%);
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
 }
 header p{margin-top:8px;color:var(--foam-dim);font-size:13px;letter-spacing:2.5px;text-transform:uppercase}
 
-/* ---------- Würfel-Bühne ---------- */
+/* ---------- Bühne ---------- */
 .stage{
   background:linear-gradient(180deg, rgba(255,246,224,.05), rgba(0,0,0,.35));
   border:1px solid var(--card-line);
   border-radius:var(--radius);
-  padding:22px 16px 18px;
-  margin-top:16px;
-  text-align:center;
+  padding:22px 16px 18px;margin-top:16px;text-align:center;
   box-shadow:0 10px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,246,224,.08);
 }
 .dice{display:flex;justify-content:center;gap:22px;min-height:92px}
@@ -88,9 +93,7 @@ header p{margin-top:8px;color:var(--foam-dim);font-size:13px;letter-spacing:2.5p
   background:linear-gradient(160deg, #FFFDF6 0%, #EFE4C8 100%);
   border-radius:18px;
   box-shadow:inset 0 -6px 0 rgba(0,0,0,.14), 0 8px 16px rgba(0,0,0,.5);
-  display:grid;
-  grid-template:repeat(3,1fr)/repeat(3,1fr);
-  padding:13px;
+  display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:13px;
 }
 .die.rolling{animation:tumble .5s ease}
 @keyframes tumble{
@@ -124,6 +127,7 @@ header p{margin-top:8px;color:var(--foam-dim);font-size:13px;letter-spacing:2.5p
 .btn-ghost{background:transparent;color:var(--foam-dim);border:2px solid var(--card-line);font-size:14px;padding:10px 16px}
 .btn-red{background:var(--red);color:var(--foam);box-shadow:0 4px 0 #7e241c}
 .btn:disabled{filter:grayscale(.7) brightness(.6);cursor:not-allowed;box-shadow:none}
+.btn-undo{margin-top:10px;width:100%}
 
 /* ---------- Ereignisse ---------- */
 .events{margin-top:14px;display:flex;flex-direction:column;gap:8px}
@@ -139,23 +143,17 @@ header p{margin-top:8px;color:var(--foam-dim);font-size:13px;letter-spacing:2.5p
 @keyframes pop{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
 
 /* ---------- Verteilen ---------- */
-.dist{
-  margin-top:14px;background:var(--foam);color:var(--ink);
-  border-radius:var(--radius);padding:16px;text-align:left;
-}
+.dist{margin-top:14px;background:var(--foam);color:var(--ink);border-radius:var(--radius);padding:16px;text-align:left}
 .dist h3{font-family:'Alfa Slab One',serif;font-size:18px;margin-bottom:4px}
 .dist p{font-size:14px;margin-bottom:10px}
 .dist-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px dashed #CBB794}
 .dist-row:last-of-type{border-bottom:none}
 .dist-ctrl{display:flex;align-items:center;gap:12px}
-.dist-ctrl button{
-  width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;
-  font-size:20px;font-weight:800;background:var(--wood);color:var(--foam);
-}
+.dist-ctrl button{width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;font-size:20px;font-weight:800;background:var(--wood);color:var(--foam)}
 .dist-ctrl button:disabled{opacity:.3;cursor:not-allowed}
 .dist-ctrl span{min-width:20px;text-align:center;font-weight:800;font-size:18px}
 
-/* ---------- Spieler ---------- */
+/* ---------- Sektionen ---------- */
 section{margin-top:24px}
 h2{
   font-family:'Alfa Slab One',serif;font-size:16px;letter-spacing:1.5px;
@@ -163,40 +161,87 @@ h2{
   display:flex;align-items:center;gap:10px;margin-bottom:10px;
 }
 h2::after{content:"";flex:1;height:2px;background:var(--card-line)}
+
+/* ---------- Spieler ---------- */
 .player{
-  display:flex;align-items:center;gap:12px;
+  display:flex;align-items:center;gap:10px;
   background:var(--card);border:1px solid var(--card-line);
-  border-radius:14px;padding:13px 14px;margin-bottom:8px;
+  border-radius:14px;padding:12px 14px;margin-bottom:8px;
 }
 .player.active{
   border-color:var(--beer);
   background:linear-gradient(90deg, rgba(245,166,35,.16), var(--card) 70%);
   box-shadow:0 0 18px rgba(245,166,35,.15);
 }
+.pmoji{font-size:24px;background:none;border:none;cursor:pointer;padding:2px;line-height:1}
+.pdot{width:6px;height:26px;border-radius:3px;flex:none}
 .player .name{font-weight:600;font-size:17px;flex:1}
-.player .sips{
-  font-family:'Alfa Slab One',serif;font-size:23px;color:var(--beer);
-  min-width:44px;text-align:right;
-}
+.player .sips{font-family:'Alfa Slab One',serif;font-size:23px;color:var(--beer);min-width:44px;text-align:right}
 .player .sips small{font-family:'Barlow';font-size:10px;display:block;color:var(--foam-dim);text-transform:uppercase;letter-spacing:1px}
 .badge3{
-  font-family:'Alfa Slab One',serif;
-  background:var(--red);color:var(--foam);
-  font-size:13px;padding:4px 9px;border-radius:8px;
-  transform:rotate(-4deg);
-  box-shadow:0 2px 0 rgba(0,0,0,.35);
-  animation:pop .3s ease;
+  font-family:'Alfa Slab One',serif;background:var(--red);color:var(--foam);
+  font-size:13px;padding:4px 9px;border-radius:8px;transform:rotate(-4deg);
+  box-shadow:0 2px 0 rgba(0,0,0,.35);animation:pop .3s ease;
 }
 .remove{background:none;border:none;color:var(--foam-dim);cursor:pointer;font-size:18px;padding:4px 6px}
 
 /* ---------- Statistik ---------- */
-table{width:100%;border-collapse:collapse;font-size:15px}
-th{text-align:left;color:var(--foam-dim);font-size:12px;text-transform:uppercase;letter-spacing:1px;padding:6px 4px;border-bottom:2px solid var(--card-line)}
-td{padding:9px 4px;border-bottom:1px solid rgba(255,246,224,.08)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;color:var(--foam-dim);font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:6px 3px;border-bottom:2px solid var(--card-line)}
+td{padding:9px 3px;border-bottom:1px solid rgba(255,246,224,.08)}
 td.num{text-align:right;font-weight:800}
 td.num.amber{color:var(--beer)}
-.bar{height:9px;background:var(--card-line);border-radius:5px;overflow:hidden;margin-top:5px}
+.bar{height:8px;background:var(--card-line);border-radius:4px;overflow:hidden;margin-top:5px}
 .bar i{display:block;height:100%;background:linear-gradient(90deg, var(--beer-deep), var(--beer))}
+
+/* ---------- Awards ---------- */
+.awards{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.award{
+  background:var(--card);border:1px solid var(--card-line);border-radius:12px;
+  padding:9px 12px;font-size:13px;display:flex;align-items:center;gap:8px;
+}
+.award b{color:var(--beer)}
+.award .aico{font-size:20px}
+
+/* ---------- Diagramme ---------- */
+.chart-card{background:rgba(0,0,0,.25);border:1px solid var(--card-line);border-radius:var(--radius);padding:14px;margin-bottom:12px}
+.chart-card h3{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--foam-dim);margin-bottom:10px}
+.distrib{display:flex;align-items:flex-end;gap:5px;height:120px}
+.dcol{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative}
+.dcol .dbar{width:100%;background:linear-gradient(180deg, var(--beer), var(--beer-deep));border-radius:4px 4px 0 0;min-height:2px}
+.dcol .exp{position:absolute;left:0;right:0;height:0;border-top:2px dashed rgba(255,246,224,.45)}
+.dcol .dlab{font-size:11px;color:var(--foam-dim);margin-top:5px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--foam-dim);margin-top:8px}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
+canvas{width:100%;height:170px;display:block}
+.chart-note{font-size:11px;color:var(--foam-dim);margin-top:6px}
+
+/* ---------- Hausregeln & Einstellungen ---------- */
+.opt{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--card);border:1px solid var(--card-line);border-radius:12px;
+  padding:11px 14px;margin-bottom:8px;font-size:15px;
+}
+.opt small{display:block;color:var(--foam-dim);font-size:12px;margin-top:1px}
+.switch{position:relative;width:48px;height:28px;flex:none}
+.switch input{opacity:0;width:0;height:0}
+.slider{
+  position:absolute;inset:0;background:var(--card-line);border-radius:14px;
+  cursor:pointer;transition:.2s;
+}
+.slider::before{
+  content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;
+  background:var(--foam);border-radius:50%;transition:.2s;
+}
+.switch input:checked + .slider{background:var(--beer)}
+.switch input:checked + .slider::before{transform:translateX(20px)}
+.rule-item{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(245,166,35,.1);border:1px dashed var(--beer-deep);
+  border-radius:10px;padding:9px 12px;margin-bottom:6px;font-size:14px;
+}
+.rule-item span{flex:1}
 
 /* ---------- Log & Setup ---------- */
 .log{list-style:none;font-size:13px;color:var(--foam-dim)}
@@ -211,20 +256,21 @@ td.num.amber{color:var(--beer)}
 .hint{font-size:13px;color:var(--foam-dim);margin-top:6px}
 .footer-btns{margin-top:28px;display:flex;gap:10px;flex-wrap:wrap}
 @media (prefers-reduced-motion: reduce){
-  .die.rolling,.event,.badge3{animation:none}
+  .die.rolling,.event,.badge3,.confetti{animation:none}
   .bubble{display:none}
 }
 </style>
 </head>
 <body>
 <div class="bubbles" id="bubbles"></div>
+<div class="confetti-box" id="confettiBox"></div>
 <div class="wrap">
   <header>
     <span class="krug">🍺</span><div class="stamp">DREI <span>MANN</span></div><span class="krug r">🍺</span>
     <p>Würfeln bis nichts mehr passiert</p>
   </header>
 
-  <!-- Würfel-Bühne -->
+  <!-- Bühne -->
   <div class="stage">
     <div class="dice">
       <div class="die" id="die1"></div>
@@ -232,6 +278,7 @@ td.num.amber{color:var(--beer)}
     </div>
     <div class="turn" id="turnInfo"></div>
     <button class="btn btn-roll" id="rollBtn">Würfeln</button>
+    <button class="btn btn-ghost btn-undo" id="undoBtn" style="display:none">↩ Letzten Wurf rückgängig</button>
     <div class="events" id="events"></div>
     <div id="distPanel"></div>
   </div>
@@ -244,7 +291,7 @@ td.num.amber{color:var(--beer)}
       <input type="text" id="nameInput" placeholder="Name…" maxlength="20">
       <button class="btn btn-ghost" id="addBtn">+ Dazu</button>
     </div>
-    <p class="hint">Mindestens 2 Spieler. Reihenfolge = Sitzordnung (für 7er / 9er).</p>
+    <p class="hint">Mindestens 2 Spieler. Reihenfolge = Sitzordnung. Tipp: aufs Emoji tippen zum Wechseln.</p>
   </section>
 
   <!-- Statistik -->
@@ -252,10 +299,62 @@ td.num.amber{color:var(--beer)}
     <h2>Statistik</h2>
     <table>
       <thead>
-        <tr><th>Spieler</th><th style="text-align:right">Schlücke</th><th style="text-align:right">Würfe</th><th style="text-align:right">3-Mann</th></tr>
+        <tr><th>Spieler</th><th style="text-align:right">Schlücke</th><th style="text-align:right">Würfe</th><th style="text-align:right">Pasche</th><th style="text-align:right">3-Mann</th></tr>
       </thead>
       <tbody id="statsBody"></tbody>
     </table>
+    <div class="awards" id="awards"></div>
+  </section>
+
+  <!-- Diagramme -->
+  <section>
+    <h2>Diagramme</h2>
+    <div class="chart-card">
+      <h3>Wurf-Verteilung (Summe 2–12)</h3>
+      <div class="distrib" id="distrib"></div>
+      <p class="chart-note">Gestrichelte Linie = theoretische Erwartung bei fairen Würfeln.</p>
+    </div>
+    <div class="chart-card">
+      <h3>Schlücke im Verlauf</h3>
+      <canvas id="lineChart" width="480" height="170"></canvas>
+      <div class="legend" id="lineLegend"></div>
+    </div>
+  </section>
+
+  <!-- Hausregeln -->
+  <section>
+    <h2>Hausregeln</h2>
+    <div class="opt">
+      <div>Elfer-Regel<small>Bei Summe 11 trinkt der Werfer selbst 1</small></div>
+      <label class="switch"><input type="checkbox" id="optRule11"><span class="slider"></span></label>
+    </div>
+    <div id="ruleList"></div>
+    <div class="add-row">
+      <input type="text" id="ruleInput" placeholder="Eigene Regel notieren…" maxlength="120">
+      <button class="btn btn-ghost" id="ruleAddBtn">+ Regel</button>
+    </div>
+    <p class="hint">Klassiker: Wer einen Doppel-6-Pasch würfelt, darf eine neue Regel erfinden.</p>
+  </section>
+
+  <!-- Einstellungen -->
+  <section>
+    <h2>Einstellungen</h2>
+    <div class="opt">
+      <div>Sound<small>Würfelgeräusch & Pasch-Fanfare</small></div>
+      <label class="switch"><input type="checkbox" id="optSound"><span class="slider"></span></label>
+    </div>
+    <div class="opt">
+      <div>Vibration<small>Bei Aktionen (falls vom Gerät unterstützt)</small></div>
+      <label class="switch"><input type="checkbox" id="optVibe"><span class="slider"></span></label>
+    </div>
+    <div class="opt">
+      <div>Bildschirm anlassen<small>Verhindert das Sperren während des Spiels</small></div>
+      <label class="switch"><input type="checkbox" id="optWake"><span class="slider"></span></label>
+    </div>
+    <div class="opt">
+      <div>Schütteln zum Würfeln<small>Handy schütteln statt Button drücken</small></div>
+      <label class="switch"><input type="checkbox" id="optShake"><span class="slider"></span></label>
+    </div>
   </section>
 
   <!-- Verlauf -->
@@ -265,6 +364,7 @@ td.num.amber{color:var(--beer)}
   </section>
 
   <div class="footer-btns">
+    <button class="btn btn-ghost" id="csvBtn">📊 CSV-Export</button>
     <button class="btn btn-ghost" id="resetStats">Statistik zurücksetzen</button>
     <button class="btn btn-ghost" id="resetAll">Alles zurücksetzen</button>
   </div>
@@ -273,7 +373,7 @@ td.num.amber{color:var(--beer)}
 <script>
 "use strict";
 
-// ---------- Bläschen erzeugen ----------
+// ================= Bläschen =================
 (function makeBubbles(){
   const box = document.getElementById("bubbles");
   for(let i = 0; i < 22; i++){
@@ -288,22 +388,50 @@ td.num.amber{color:var(--beer)}
   }
 })();
 
-// ---------- Zustand ----------
-let state = {
-  players: [],          // {id, name, sips, rolls, dreiCount}
-  turn: 0,
-  dreiManId: null,
-  log: [],
-  nextId: 1
-};
-let pendingDist = null;   // {total, remaining, alloc}
-let busy = false;         // während Animation / Auto-Wechsel
+// ================= Zustand =================
+const EMOJIS = ["🍺","🍻","🥴","🎲","🔥","🍀","👑","💀","🦁","🐙","🤠","🧙"];
+const COLORS = ["#F5A623","#5CC1E8","#E8615C","#7FD65C","#C77CE8","#E8D25C","#5CE8B8","#E88A5C"];
 
-// ---------- Persistenz ----------
+function freshState(){
+  return {
+    players: [],       // {id,name,sips,rolls,dreiCount,paschCount,dreiRolls,given,emoji,color}
+    turn: 0,
+    dreiManId: null,
+    log: [],
+    nextId: 1,
+    dist: Array(13).fill(0),   // Summen-Häufigkeit, Index 2..12
+    history: [],               // [{r, s:{id:sips}}]
+    rollNo: 0,
+    rules: [],
+    settings: {sound: true, vibe: true, wake: false, shake: false, rule11: false}
+  };
+}
+let state = freshState();
+let pendingDist = null;
+let busy = false;
+let undoSnap = null;
+
+// ================= Persistenz =================
 function save(){ try{ localStorage.setItem("dreimann", JSON.stringify(state)); }catch(e){} }
-function load(){ try{ const r = localStorage.getItem("dreimann"); if(r) state = JSON.parse(r); }catch(e){} }
+function load(){
+  try{
+    const r = localStorage.getItem("dreimann");
+    if(!r) return;
+    const s = JSON.parse(r);
+    state = Object.assign(freshState(), s);
+    state.settings = Object.assign(freshState().settings, s.settings || {});
+    if(!Array.isArray(state.dist) || state.dist.length !== 13) state.dist = Array(13).fill(0);
+    state.players.forEach((p, i) => {
+      if(p.paschCount == null) p.paschCount = 0;
+      if(p.dreiRolls == null) p.dreiRolls = 0;
+      if(p.given == null) p.given = 0;
+      if(!p.emoji) p.emoji = EMOJIS[i % EMOJIS.length];
+      if(!p.color) p.color = COLORS[i % COLORS.length];
+    });
+  }catch(e){}
+}
 
-// ---------- Hilfen ----------
+// ================= Hilfen =================
 const $ = id => document.getElementById(id);
 const byId = id => state.players.find(p => p.id === id);
 function addLog(text){ state.log.unshift(text); state.log = state.log.slice(0, 12); }
@@ -315,7 +443,110 @@ function esc(s){
   return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 
-// ---------- Würfel rendern ----------
+// ================= Sound (WebAudio, ohne Dateien) =================
+let audioCtx = null;
+function ctx(){
+  if(!audioCtx){
+    try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){}
+  }
+  if(audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
+function sndDice(){
+  if(!state.settings.sound) return;
+  const c = ctx(); if(!c) return;
+  for(let i = 0; i < 6; i++){
+    const t = c.currentTime + i * 0.07 + Math.random() * 0.02;
+    const buf = c.createBuffer(1, 1200, c.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let j = 0; j < d.length; j++) d[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / d.length, 2);
+    const src = c.createBufferSource(); src.buffer = buf;
+    const g = c.createGain(); g.gain.value = 0.25;
+    src.connect(g); g.connect(c.destination);
+    src.start(t);
+  }
+}
+function sndTone(freq, t0, dur, vol){
+  const c = ctx(); if(!c) return;
+  const o = c.createOscillator(), g = c.createGain();
+  o.type = "triangle"; o.frequency.value = freq;
+  g.gain.setValueAtTime(vol, c.currentTime + t0);
+  g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + t0 + dur);
+  o.connect(g); g.connect(c.destination);
+  o.start(c.currentTime + t0); o.stop(c.currentTime + t0 + dur + 0.05);
+}
+function sndFanfare(){
+  if(!state.settings.sound) return;
+  sndTone(523, 0, 0.18, 0.2); sndTone(659, 0.15, 0.18, 0.2); sndTone(784, 0.3, 0.35, 0.25);
+}
+function sndDing(){
+  if(!state.settings.sound) return;
+  sndTone(880, 0, 0.2, 0.18);
+}
+
+// ================= Vibration =================
+function vibe(pattern){
+  if(state.settings.vibe && navigator.vibrate){ try{ navigator.vibrate(pattern); }catch(e){} }
+}
+
+// ================= Konfetti =================
+function confetti(n){
+  const box = $("confettiBox");
+  const cols = ["#F5A623","#FFF6E0","#D64533","#FFC85C"];
+  for(let i = 0; i < n; i++){
+    const c = document.createElement("div");
+    c.className = "confetti";
+    c.style.left = Math.random() * 100 + "%";
+    c.style.background = cols[i % cols.length];
+    c.style.animationDelay = (Math.random() * 0.4) + "s";
+    c.style.transform = "rotate(" + Math.random() * 360 + "deg)";
+    box.appendChild(c);
+    setTimeout(() => c.remove(), 2400);
+  }
+}
+
+// ================= Wake Lock =================
+let wakeLock = null;
+async function applyWake(){
+  if(state.settings.wake && "wakeLock" in navigator){
+    try{ wakeLock = await navigator.wakeLock.request("screen"); }catch(e){}
+  }else if(wakeLock){
+    try{ wakeLock.release(); }catch(e){}
+    wakeLock = null;
+  }
+}
+document.addEventListener("visibilitychange", () => {
+  if(document.visibilityState === "visible") applyWake();
+});
+
+// ================= Schütteln =================
+let lastShake = 0;
+function onMotion(e){
+  if(!state.settings.shake || busy || pendingDist) return;
+  const a = e.accelerationIncludingGravity;
+  if(!a) return;
+  const mag = Math.sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
+  const now = Date.now();
+  if(mag > 25 && now - lastShake > 1800){
+    lastShake = now;
+    roll();
+  }
+}
+async function applyShake(){
+  if(state.settings.shake){
+    if(typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function"){
+      try{
+        const res = await DeviceMotionEvent.requestPermission();
+        if(res !== "granted"){ state.settings.shake = false; syncSettingsUI(); save(); return; }
+      }catch(e){ state.settings.shake = false; syncSettingsUI(); save(); return; }
+    }
+    window.addEventListener("devicemotion", onMotion);
+  }else{
+    window.removeEventListener("devicemotion", onMotion);
+  }
+}
+
+// ================= Würfel rendern =================
 const PIPS = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
 function renderDie(el, v){
   el.dataset.v = v || "";
@@ -328,7 +559,7 @@ function renderDie(el, v){
   }
 }
 
-// ---------- UI rendern ----------
+// ================= UI rendern =================
 function render(){
   const n = state.players.length;
   if(state.turn >= n) state.turn = 0;
@@ -341,9 +572,13 @@ function render(){
     $("turnInfo").textContent = "Füge mindestens 2 Spieler hinzu.";
     $("rollBtn").disabled = true;
   }
+  $("undoBtn").style.display = undoSnap && !busy ? "block" : "none";
 
+  // Spielerliste
   $("playerList").innerHTML = state.players.map((p, i) =>
     '<div class="player' + (i === state.turn && n >= 2 ? ' active' : '') + '">' +
+      '<span class="pdot" style="background:' + p.color + '"></span>' +
+      '<button class="pmoji" data-moji="' + p.id + '" title="Emoji wechseln">' + p.emoji + '</button>' +
       '<span class="name">' + esc(p.name) + '</span>' +
       (p.id === state.dreiManId ? '<span class="badge3">3-MANN</span>' : '') +
       '<span class="sips">' + p.sips + '<small>Schlücke</small></span>' +
@@ -351,25 +586,119 @@ function render(){
     '</div>'
   ).join("");
 
+  // Tabelle
   const max = Math.max(1, ...state.players.map(p => p.sips));
   const sorted = [...state.players].sort((a, b) => b.sips - a.sips);
   $("statsBody").innerHTML = sorted.map(p =>
-    "<tr><td>" + esc(p.name) +
+    "<tr><td>" + p.emoji + " " + esc(p.name) +
     '<div class="bar"><i style="width:' + Math.round(p.sips / max * 100) + '%"></i></div></td>' +
     '<td class="num amber">' + p.sips + "</td>" +
     '<td class="num">' + p.rolls + "</td>" +
+    '<td class="num">' + p.paschCount + "</td>" +
     '<td class="num">' + p.dreiCount + "</td></tr>"
   ).join("");
+
+  renderAwards();
+  renderDistrib();
+  renderLineChart();
+  renderRules();
 
   $("log").innerHTML = state.log.map(l => "<li>" + esc(l) + "</li>").join("");
   save();
 }
 
-// ---------- Wurf ----------
+// ================= Awards =================
+function renderAwards(){
+  const el = $("awards");
+  const ps = state.players;
+  if(ps.length < 2 || state.rollNo < 5){ el.innerHTML = ""; return; }
+  const out = [];
+  const top = (key, min) => {
+    const best = [...ps].sort((a, b) => b[key] - a[key])[0];
+    return best && best[key] >= (min || 1) ? best : null;
+  };
+  const maxSips = top("sips");
+  if(maxSips) out.push({i: "🥴", t: "Pechvogel", p: maxSips, v: maxSips.sips + " Schlücke"});
+  const minSips = [...ps].sort((a, b) => a.sips - b.sips)[0];
+  if(minSips && maxSips && minSips.id !== maxSips.id)
+    out.push({i: "🍀", t: "Glückspilz", p: minSips, v: "nur " + minSips.sips + " Schlücke"});
+  const pk = top("paschCount");
+  if(pk) out.push({i: "🎲", t: "Pasch-König", p: pk, v: pk.paschCount + "× Pasch"});
+  const dm = top("dreiRolls");
+  if(dm) out.push({i: "👑", t: "3-Mann-Marathon", p: dm, v: dm.dreiRolls + " Würfe im Amt"});
+  const gv = top("given");
+  if(gv) out.push({i: "😈", t: "Verteiler", p: gv, v: gv.given + " verteilt"});
+  el.innerHTML = out.map(a =>
+    '<div class="award"><span class="aico">' + a.i + "</span><span><b>" + a.t + ":</b> " +
+    esc(a.p.name) + " (" + a.v + ")</span></div>"
+  ).join("");
+}
+
+// ================= Wurf-Verteilung =================
+const EXPECTED = [0,0,1,2,3,4,5,6,5,4,3,2,1]; // /36
+function renderDistrib(){
+  const total = state.dist.reduce((a, b) => a + b, 0);
+  const el = $("distrib");
+  let html = "";
+  const maxShare = Math.max(6 / 36, ...state.dist.map(v => total ? v / total : 0));
+  for(let s = 2; s <= 12; s++){
+    const share = total ? state.dist[s] / total : 0;
+    const h = Math.round(share / maxShare * 100);
+    const expH = Math.round((EXPECTED[s] / 36) / maxShare * 100);
+    html += '<div class="dcol">' +
+      '<div class="exp" style="bottom:' + expH + '%"></div>' +
+      '<div class="dbar" style="height:' + h + '%" title="' + state.dist[s] + '×"></div>' +
+      '<div class="dlab">' + s + "</div></div>";
+  }
+  el.innerHTML = html;
+}
+
+// ================= Linien-Chart =================
+function renderLineChart(){
+  const cv = $("lineChart");
+  const c = cv.getContext("2d");
+  const W = cv.width, H = cv.height, pad = 6;
+  c.clearRect(0, 0, W, H);
+  const hist = state.history;
+  $("lineLegend").innerHTML = state.players.map(p =>
+    "<span><i style=\"background:" + p.color + "\"></i>" + esc(p.name) + "</span>"
+  ).join("");
+  if(hist.length < 2 || !state.players.length) return;
+  const maxY = Math.max(1, ...hist.map(h => Math.max(...Object.values(h.s))));
+  const x = i => pad + i / (hist.length - 1) * (W - 2 * pad);
+  const y = v => H - pad - v / maxY * (H - 2 * pad);
+  // Gitter
+  c.strokeStyle = "rgba(255,246,224,.12)"; c.lineWidth = 1;
+  for(let g = 0; g <= 4; g++){
+    const gy = pad + g / 4 * (H - 2 * pad);
+    c.beginPath(); c.moveTo(pad, gy); c.lineTo(W - pad, gy); c.stroke();
+  }
+  // Linien
+  state.players.forEach(p => {
+    c.strokeStyle = p.color; c.lineWidth = 2.5; c.beginPath();
+    hist.forEach((h, i) => {
+      const v = h.s[p.id] != null ? h.s[p.id] : 0;
+      if(i === 0) c.moveTo(x(i), y(v)); else c.lineTo(x(i), y(v));
+    });
+    c.stroke();
+  });
+}
+
+// ================= Hausregeln =================
+function renderRules(){
+  $("ruleList").innerHTML = state.rules.map((r, i) =>
+    '<div class="rule-item"><span>📜 ' + esc(r) + '</span>' +
+    '<button class="remove" data-rdel="' + i + '">✕</button></div>'
+  ).join("");
+}
+
+// ================= Wurf =================
 function roll(){
   if(state.players.length < 2 || pendingDist || busy) return;
+  undoSnap = JSON.stringify(state);
   busy = true;
   render();
+  sndDice();
   const a = 1 + Math.floor(Math.random() * 6);
   const b = 1 + Math.floor(Math.random() * 6);
   const d1 = $("die1"), d2 = $("die2");
@@ -383,10 +712,16 @@ function resolve(a, b){
   const n = state.players.length;
   const roller = state.players[state.turn];
   roller.rolls++;
+  state.rollNo++;
   const sum = a + b;
+  state.dist[sum]++;
   const events = [];
   addLog(roller.name + " würfelt " + a + " + " + b);
   let hadAction = false;
+
+  // Amtszeit zählen (vor evtl. Wechsel)
+  const dmBefore = byId(state.dreiManId);
+  if(dmBefore) dmBefore.dreiRolls++;
 
   // 1 + 2 → neuer 3-Mann
   if((a === 1 && b === 2) || (a === 2 && b === 1)){
@@ -395,9 +730,10 @@ function resolve(a, b){
     events.push({t: esc(roller.name) + " ist der neue <b>3-Mann</b>!", drei: true});
     addLog(roller.name + " ist neuer 3-Mann");
     hadAction = true;
+    vibe([200]); confetti(24);
   }
 
-  // Dreien → 3-Mann trinkt pro Drei
+  // Dreien → 3-Mann trinkt
   const threes = (a === 3 ? 1 : 0) + (b === 3 ? 1 : 0);
   if(threes > 0){
     const dm = byId(state.dreiManId);
@@ -427,19 +763,32 @@ function resolve(a, b){
     events.push({t: "Zehn! <b>Alle trinken 1</b>"});
     hadAction = true;
   }
-
-  // Pasch → Augenzahl verteilen
-  if(a === b){
-    pendingDist = {total: a, remaining: a, alloc: {}};
-    events.push({t: "Pasch! " + esc(roller.name) + " verteilt <b>" + a + " Schlücke</b>"});
+  if(sum === 11 && state.settings.rule11){
+    drink(roller, 1, "Elfer-Regel");
+    events.push({t: "Elf! <b>" + esc(roller.name) + "</b> trinkt selbst 1"});
     hadAction = true;
   }
 
+  // Pasch
+  if(a === b){
+    roller.paschCount++;
+    pendingDist = {total: a, remaining: a, alloc: {}};
+    events.push({t: "Pasch! " + esc(roller.name) + " verteilt <b>" + a + " Schlücke</b>"});
+    if(a === 6) events.push({t: "Doppel-6! 📜 Zeit, eine neue Hausregel zu erfinden.", drei: true});
+    hadAction = true;
+    sndFanfare(); vibe([100, 60, 100]); confetti(40);
+  }else if(hadAction){
+    sndDing(); vibe([60]);
+  }
+
+  // Verlaufspunkt speichern
+  const snap = {r: state.rollNo, s: {}};
+  state.players.forEach(p => snap.s[p.id] = p.sips);
+  state.history.push(snap);
+  if(state.history.length > 240) state.history = state.history.filter((_, i) => i % 2 === 0);
+
   if(hadAction){
-    showEvents(events, false);
-    if(!pendingDist){
-      $("turnInfo").innerHTML = "Am Zug: <b>" + esc(roller.name) + "</b><span class=\"again\">Aktion! Nochmal würfeln 🎲</span>";
-    }
+    showEvents(events);
     busy = false;
     renderDistPanel();
     render();
@@ -447,8 +796,7 @@ function resolve(a, b){
       $("turnInfo").innerHTML = "Am Zug: <b>" + esc(roller.name) + "</b><span class=\"again\">Aktion! Nochmal würfeln 🎲</span>";
     }
   }else{
-    // Nichts passiert → automatisch weiter
-    showEvents([{t: "Nichts passiert (" + a + "+" + b + " = " + sum + "). Weiter geht's…", calm: true}], true);
+    showEvents([{t: "Nichts passiert (" + a + "+" + b + " = " + sum + "). Weiter geht's…", calm: true}]);
     renderDistPanel();
     render();
     setTimeout(() => {
@@ -461,13 +809,28 @@ function resolve(a, b){
   }
 }
 
-function showEvents(events, calmOnly){
+function showEvents(events){
   $("events").innerHTML = events.map(e =>
     '<div class="event' + (e.drei ? ' drei' : '') + (e.calm ? ' calm' : '') + '">' + e.t + "</div>"
   ).join("");
 }
 
-// ---------- Pasch verteilen ----------
+// ================= Undo =================
+function undo(){
+  if(!undoSnap || busy) return;
+  try{
+    state = Object.assign(freshState(), JSON.parse(undoSnap));
+  }catch(e){ return; }
+  undoSnap = null;
+  pendingDist = null;
+  $("events").innerHTML = '<div class="event calm">Letzter Wurf rückgängig gemacht.</div>';
+  renderDie($("die1"), null); renderDie($("die2"), null);
+  renderDistPanel();
+  syncSettingsUI();
+  render();
+}
+
+// ================= Pasch verteilen =================
 function renderDistPanel(){
   const el = $("distPanel");
   if(!pendingDist){ el.innerHTML = ""; return; }
@@ -478,7 +841,7 @@ function renderDistPanel(){
       "<p>" + esc(roller.name) + ", noch <b>" + pendingDist.remaining + "</b> übrig:</p>" +
       state.players.map(p => {
         const v = pendingDist.alloc[p.id] || 0;
-        return '<div class="dist-row"><span>' + esc(p.name) + "</span>" +
+        return '<div class="dist-row"><span>' + p.emoji + " " + esc(p.name) + "</span>" +
           '<div class="dist-ctrl">' +
             '<button data-minus="' + p.id + '"' + (v === 0 ? " disabled" : "") + ">−</button>" +
             "<span>" + v + "</span>" +
@@ -506,25 +869,52 @@ function distClick(e){
     for(const [id, num] of Object.entries(pendingDist.alloc)){
       if(num > 0){
         const p = byId(Number(id));
-        if(p) drink(p, num, "verteilt von " + roller.name);
+        if(p){ drink(p, num, "verteilt von " + roller.name); roller.given += num; }
       }
     }
+    // Verlaufspunkt nach Verteilung aktualisieren
+    if(state.history.length){
+      const last = state.history[state.history.length - 1];
+      state.players.forEach(p => last.s[p.id] = p.sips);
+    }
     pendingDist = null;
-    $("turnInfo").innerHTML = "Am Zug: <b>" + esc(roller.name) + "</b><span class=\"again\">Aktion! Nochmal würfeln 🎲</span>";
   }
   renderDistPanel();
   render();
-  if(!pendingDist){
+  if(!pendingDist && state.players.length >= 2){
     const roller = state.players[state.turn];
     $("turnInfo").innerHTML = "Am Zug: <b>" + esc(roller.name) + "</b><span class=\"again\">Aktion! Nochmal würfeln 🎲</span>";
   }
 }
 
-// ---------- Spielerverwaltung ----------
+// ================= CSV-Export =================
+function exportCSV(){
+  const head = "Spieler;Schlücke;Würfe;Pasche;3-Mann geworden;Würfe als 3-Mann;Schlücke verteilt";
+  const rows = state.players.map(p =>
+    [p.name, p.sips, p.rolls, p.paschCount, p.dreiCount, p.dreiRolls, p.given].join(";")
+  );
+  const dist = "\n\nSumme;Anzahl\n" +
+    Array.from({length: 11}, (_, i) => (i + 2) + ";" + state.dist[i + 2]).join("\n");
+  const csv = "\uFEFF" + head + "\n" + rows.join("\n") + dist;
+  const blob = new Blob([csv], {type: "text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  const d = new Date();
+  a.download = "dreimann_" + d.toISOString().slice(0, 10) + ".csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ================= Spielerverwaltung =================
 function addPlayer(){
   const name = $("nameInput").value.trim();
   if(!name) return;
-  state.players.push({id: state.nextId++, name, sips: 0, rolls: 0, dreiCount: 0});
+  const i = state.players.length;
+  state.players.push({
+    id: state.nextId++, name, sips: 0, rolls: 0, dreiCount: 0,
+    paschCount: 0, dreiRolls: 0, given: 0,
+    emoji: EMOJIS[i % EMOJIS.length], color: COLORS[i % COLORS.length]
+  });
   $("nameInput").value = "";
   render();
 }
@@ -536,31 +926,81 @@ function removePlayer(id){
   state.players.splice(idx, 1);
   render();
 }
+function cycleEmoji(id){
+  const p = byId(id);
+  if(!p) return;
+  p.emoji = EMOJIS[(EMOJIS.indexOf(p.emoji) + 1) % EMOJIS.length];
+  render();
+}
 
-// ---------- Events ----------
+// ================= Einstellungen =================
+function syncSettingsUI(){
+  $("optSound").checked = state.settings.sound;
+  $("optVibe").checked = state.settings.vibe;
+  $("optWake").checked = state.settings.wake;
+  $("optShake").checked = state.settings.shake;
+  $("optRule11").checked = state.settings.rule11;
+}
+$("optSound").addEventListener("change", e => { state.settings.sound = e.target.checked; if(e.target.checked) ctx(); save(); });
+$("optVibe").addEventListener("change", e => { state.settings.vibe = e.target.checked; save(); });
+$("optWake").addEventListener("change", e => { state.settings.wake = e.target.checked; applyWake(); save(); });
+$("optShake").addEventListener("change", e => { state.settings.shake = e.target.checked; applyShake(); save(); });
+$("optRule11").addEventListener("change", e => { state.settings.rule11 = e.target.checked; save(); });
+
+// ================= Events =================
 $("rollBtn").addEventListener("click", roll);
+$("undoBtn").addEventListener("click", undo);
 $("addBtn").addEventListener("click", addPlayer);
 $("nameInput").addEventListener("keydown", e => { if(e.key === "Enter") addPlayer(); });
 $("playerList").addEventListener("click", e => {
   if(e.target.dataset.del) removePlayer(Number(e.target.dataset.del));
+  if(e.target.dataset.moji) cycleEmoji(Number(e.target.dataset.moji));
 });
 $("distPanel").addEventListener("click", distClick);
+$("csvBtn").addEventListener("click", exportCSV);
+$("ruleAddBtn").addEventListener("click", () => {
+  const t = $("ruleInput").value.trim();
+  if(!t) return;
+  state.rules.push(t);
+  $("ruleInput").value = "";
+  render();
+});
+$("ruleInput").addEventListener("keydown", e => { if(e.key === "Enter") $("ruleAddBtn").click(); });
+$("ruleList").addEventListener("click", e => {
+  if(e.target.dataset.rdel != null){
+    state.rules.splice(Number(e.target.dataset.rdel), 1);
+    render();
+  }
+});
 $("resetStats").addEventListener("click", () => {
-  if(!confirm("Alle Schlücke & Würfe auf 0 setzen?")) return;
-  state.players.forEach(p => { p.sips = 0; p.rolls = 0; p.dreiCount = 0; });
+  if(!confirm("Alle Schlücke, Würfe & Diagramme auf 0 setzen?")) return;
+  state.players.forEach(p => { p.sips = 0; p.rolls = 0; p.dreiCount = 0; p.paschCount = 0; p.dreiRolls = 0; p.given = 0; });
   state.log = []; state.dreiManId = null; state.turn = 0;
-  pendingDist = null; busy = false;
+  state.dist = Array(13).fill(0); state.history = []; state.rollNo = 0;
+  pendingDist = null; busy = false; undoSnap = null;
   $("events").innerHTML = ""; renderDistPanel(); render();
 });
 $("resetAll").addEventListener("click", () => {
-  if(!confirm("Wirklich alles löschen (auch Spieler)?")) return;
-  state = {players: [], turn: 0, dreiManId: null, log: [], nextId: 1};
-  pendingDist = null; busy = false;
+  if(!confirm("Wirklich alles löschen (auch Spieler & Regeln)?")) return;
+  const settings = state.settings;
+  state = freshState();
+  state.settings = settings;
+  pendingDist = null; busy = false; undoSnap = null;
   $("events").innerHTML = ""; renderDistPanel(); render();
 });
 
-// ---------- Start ----------
+// ================= PWA =================
+if("serviceWorker" in navigator){
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}
+
+// ================= Start =================
 load();
+syncSettingsUI();
+applyWake();
+if(state.settings.shake) applyShake();
 renderDie($("die1"), null);
 renderDie($("die2"), null);
 render();
