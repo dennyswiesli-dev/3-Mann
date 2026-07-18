@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drei Mann – Trinkspiel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Barlow:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --felt:#17402B;
+  --felt-light:#1E5238;
+  --felt-line:#2A6B49;
+  --cream:#F5EDD8;
+  --cream-dim:#D9CFB4;
+  --amber:#E8A33D;
+  --red:#C93A2E;
+  --ink:#241E17;
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Barlow',sans-serif;
+  background:
+    radial-gradient(ellipse at 50% -10%, var(--felt-light) 0%, var(--felt) 55%),
+    var(--felt);
+  color:var(--cream);
+  min-height:100vh;
+  padding-bottom:60px;
+}
+.wrap{max-width:520px;margin:0 auto;padding:0 16px}
+
+/* Kopf */
+header{padding:26px 0 10px;text-align:center}
+.stamp{
+  display:inline-block;
+  font-family:'Alfa Slab One',serif;
+  font-size:clamp(34px,9vw,46px);
+  line-height:1;
+  color:var(--cream);
+  border:4px solid var(--cream);
+  border-radius:10px;
+  padding:10px 18px 8px;
+  transform:rotate(-2deg);
+  letter-spacing:1px;
+  box-shadow:0 4px 0 rgba(0,0,0,.25);
+}
+.stamp span{color:var(--amber)}
+header p{margin-top:10px;color:var(--cream-dim);font-size:14px;letter-spacing:.4px;text-transform:uppercase}
+
+/* Würfel-Bühne */
+.stage{
+  background:rgba(0,0,0,.18);
+  border:1px solid var(--felt-line);
+  border-radius:var(--radius);
+  padding:22px 16px 18px;
+  margin-top:14px;
+  text-align:center;
+}
+.dice{display:flex;justify-content:center;gap:22px;min-height:92px}
+.die{
+  width:84px;height:84px;
+  background:var(--cream);
+  border-radius:16px;
+  box-shadow:inset 0 -5px 0 rgba(0,0,0,.15), 0 6px 12px rgba(0,0,0,.35);
+  display:grid;
+  grid-template:repeat(3,1fr)/repeat(3,1fr);
+  padding:12px;
+  transition:transform .12s;
+}
+.die.rolling{animation:tumble .5s ease}
+@keyframes tumble{
+  0%{transform:rotate(0) translateY(0)}
+  30%{transform:rotate(160deg) translateY(-14px)}
+  60%{transform:rotate(300deg) translateY(4px)}
+  100%{transform:rotate(360deg) translateY(0)}
+}
+.pip{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.pip i{width:13px;height:13px;background:var(--ink);border-radius:50%}
+.die[data-v="3"] .pip i{background:var(--red)}
+
+.turn{margin-top:14px;font-size:15px;color:var(--cream-dim)}
+.turn b{color:var(--cream);font-size:18px}
+
+.btn{
+  font-family:'Barlow',sans-serif;font-weight:800;
+  font-size:18px;letter-spacing:.5px;text-transform:uppercase;
+  border:none;border-radius:12px;cursor:pointer;
+  padding:14px 22px;margin-top:14px;
+  transition:transform .06s, filter .15s;
+}
+.btn:active{transform:translateY(2px)}
+.btn-roll{background:var(--amber);color:var(--ink);box-shadow:0 4px 0 #9a6a1e;width:100%}
+.btn-ghost{background:transparent;color:var(--cream-dim);border:2px solid var(--felt-line);font-size:14px;padding:10px 16px}
+.btn-red{background:var(--red);color:var(--cream);box-shadow:0 4px 0 #7e241c}
+.btn:disabled{filter:grayscale(.6) brightness(.7);cursor:not-allowed}
+.row-btns{display:flex;gap:10px}
+.row-btns .btn{flex:1}
+
+/* Ereignis-Banner */
+.events{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+.event{
+  background:var(--cream);color:var(--ink);
+  border-radius:10px;padding:10px 14px;
+  font-weight:600;font-size:15px;text-align:left;
+  border-left:6px solid var(--amber);
+  animation:pop .25s ease;
+}
+.event.drei{border-left-color:var(--red)}
+@keyframes pop{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* Verteilen-Panel */
+.dist{
+  margin-top:14px;background:var(--cream);color:var(--ink);
+  border-radius:var(--radius);padding:16px;text-align:left;
+}
+.dist h3{font-family:'Alfa Slab One',serif;font-size:18px;margin-bottom:4px}
+.dist p{font-size:14px;margin-bottom:10px}
+.dist-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px dashed var(--cream-dim)}
+.dist-row:last-of-type{border-bottom:none}
+.dist-ctrl{display:flex;align-items:center;gap:12px}
+.dist-ctrl button{
+  width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;
+  font-size:20px;font-weight:800;background:var(--felt);color:var(--cream);
+}
+.dist-ctrl button:disabled{opacity:.3;cursor:not-allowed}
+.dist-ctrl span{min-width:20px;text-align:center;font-weight:800;font-size:18px}
+
+/* Spielerliste */
+section{margin-top:22px}
+h2{
+  font-family:'Alfa Slab One',serif;font-size:17px;letter-spacing:1px;
+  text-transform:uppercase;color:var(--cream-dim);
+  display:flex;align-items:center;gap:10px;margin-bottom:10px;
+}
+h2::after{content:"";flex:1;height:2px;background:var(--felt-line)}
+.player{
+  display:flex;align-items:center;gap:12px;
+  background:rgba(0,0,0,.18);border:1px solid var(--felt-line);
+  border-radius:12px;padding:12px 14px;margin-bottom:8px;
+  position:relative;
+}
+.player.active{border-color:var(--amber);background:rgba(232,163,61,.12)}
+.player .name{font-weight:600;font-size:17px;flex:1}
+.player .sips{
+  font-family:'Alfa Slab One',serif;font-size:22px;color:var(--amber);
+  min-width:44px;text-align:right;
+}
+.player .sips small{font-family:'Barlow';font-size:10px;display:block;color:var(--cream-dim);text-transform:uppercase;letter-spacing:1px}
+.badge3{
+  font-family:'Alfa Slab One',serif;
+  background:var(--red);color:var(--cream);
+  font-size:13px;padding:4px 9px;border-radius:8px;
+  transform:rotate(-4deg);
+  box-shadow:0 2px 0 rgba(0,0,0,.3);
+  animation:pop .3s ease;
+}
+.remove{
+  background:none;border:none;color:var(--cream-dim);cursor:pointer;
+  font-size:18px;padding:4px 6px;
+}
+
+/* Statistik */
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{text-align:left;color:var(--cream-dim);font-size:12px;text-transform:uppercase;letter-spacing:1px;padding:6px 4px;border-bottom:2px solid var(--felt-line)}
+td{padding:9px 4px;border-bottom:1px solid rgba(255,255,255,.08)}
+td.num{text-align:right;font-weight:800}
+td.num.amber{color:var(--amber)}
+.bar{height:8px;background:var(--felt-line);border-radius:4px;overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;background:var(--amber)}
+
+/* Log */
+.log{list-style:none;font-size:13px;color:var(--cream-dim)}
+.log li{padding:5px 0;border-bottom:1px dashed rgba(255,255,255,.08)}
+
+/* Setup */
+.add-row{display:flex;gap:8px;margin-bottom:10px}
+.add-row input{
+  flex:1;padding:12px 14px;border-radius:10px;border:2px solid var(--felt-line);
+  background:rgba(0,0,0,.25);color:var(--cream);font-size:16px;font-family:'Barlow';
+}
+.add-row input::placeholder{color:var(--cream-dim)}
+.add-row .btn{margin-top:0}
+.hint{font-size:13px;color:var(--cream-dim);margin-top:6px}
+.footer-btns{margin-top:26px;display:flex;gap:10px;flex-wrap:wrap}
+@media (prefers-reduced-motion: reduce){
+  .die.rolling,.event,.badge3{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="stamp">DREI <span>MANN</span></div>
+    <p>Zwei Würfel · Ein Opfer · Kein Ende</p>
+  </header>
+
+  <!-- Würfel-Bühne -->
+  <div class="stage">
+    <div class="dice">
+      <div class="die" id="die1"></div>
+      <div class="die" id="die2"></div>
+    </div>
+    <div class="turn" id="turnInfo"></div>
+    <button class="btn btn-roll" id="rollBtn">Würfeln</button>
+    <div class="row-btns" id="afterRoll" style="display:none">
+      <button class="btn btn-ghost" id="nextBtn">Nächster Spieler →</button>
+    </div>
+    <div class="events" id="events"></div>
+    <div id="distPanel"></div>
+  </div>
+
+  <!-- Spieler -->
+  <section>
+    <h2>Spieler</h2>
+    <div id="playerList"></div>
+    <div class="add-row">
+      <input type="text" id="nameInput" placeholder="Name…" maxlength="20">
+      <button class="btn btn-ghost" id="addBtn">+ Dazu</button>
+    </div>
+    <p class="hint">Mindestens 2 Spieler. Reihenfolge = Sitzordnung (für 7er / 9er).</p>
+  </section>
+
+  <!-- Statistik -->
+  <section>
+    <h2>Statistik</h2>
+    <table>
+      <thead>
+        <tr><th>Spieler</th><th style="text-align:right">Schlücke</th><th style="text-align:right">Würfe</th><th style="text-align:right">3-Mann</th></tr>
+      </thead>
+      <tbody id="statsBody"></tbody>
+    </table>
+  </section>
+
+  <!-- Verlauf -->
+  <section>
+    <h2>Verlauf</h2>
+    <ul class="log" id="log"></ul>
+  </section>
+
+  <div class="footer-btns">
+    <button class="btn btn-ghost" id="resetStats">Statistik zurücksetzen</button>
+    <button class="btn btn-ghost" id="resetAll">Alles zurücksetzen</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+// ---------- Zustand ----------
+let state = {
+  players: [],          // {id, name, sips, rolls, dreiCount}
+  turn: 0,              // Index des Spielers am Zug
+  dreiManId: null,      // wer ist aktuell 3-Mann
+  log: [],
+  nextId: 1
+};
+let pendingDist = null; // {total, remaining, alloc:{id:n}}
+let lastRollHadEvent = false;
+
+// ---------- Persistenz (fällt ohne localStorage einfach weg) ----------
+function save(){
+  try{ localStorage.setItem("dreimann", JSON.stringify(state)); }catch(e){}
+}
+function load(){
+  try{
+    const raw = localStorage.getItem("dreimann");
+    if(raw){ state = JSON.parse(raw); }
+  }catch(e){}
+}
+
+// ---------- Hilfen ----------
+const $ = id => document.getElementById(id);
+const byId = id => state.players.find(p => p.id === id);
+function addLog(text){
+  state.log.unshift(text);
+  state.log = state.log.slice(0, 12);
+}
+function drink(player, n, reason){
+  player.sips += n;
+  addLog(player.name + " trinkt " + n + (n === 1 ? " Schluck" : " Schlücke") + " (" + reason + ")");
+}
+
+// ---------- Würfel rendern ----------
+const PIPS = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+function renderDie(el, v){
+  el.dataset.v = v || "";
+  el.innerHTML = "";
+  for(let i = 0; i < 9; i++){
+    const c = document.createElement("div");
+    c.className = "pip";
+    if(v && PIPS[v].includes(i)) c.innerHTML = "<i></i>";
+    el.appendChild(c);
+  }
+}
+
+// ---------- UI rendern ----------
+function render(){
+  const n = state.players.length;
+  if(state.turn >= n) state.turn = 0;
+
+  // Zug-Info + Roll-Button
+  if(n >= 2){
+    const cur = state.players[state.turn];
+    $("turnInfo").innerHTML = "Am Zug: <b>" + esc(cur.name) + "</b>";
+    $("rollBtn").disabled = !!pendingDist;
+  }else{
+    $("turnInfo").textContent = "Füge mindestens 2 Spieler hinzu.";
+    $("rollBtn").disabled = true;
+  }
+  $("afterRoll").style.display = (lastRollHadEvent && !pendingDist && n >= 2) ? "flex" : "none";
+
+  // Spielerliste
+  $("playerList").innerHTML = state.players.map((p, i) =>
+    '<div class="player' + (i === state.turn && n >= 2 ? ' active' : '') + '">' +
+      '<span class="name">' + esc(p.name) + '</span>' +
+      (p.id === state.dreiManId ? '<span class="badge3">3-MANN</span>' : '') +
+      '<span class="sips">' + p.sips + '<small>Schlücke</small></span>' +
+      '<button class="remove" data-del="' + p.id + '" title="Entfernen">✕</button>' +
+    '</div>'
+  ).join("");
+
+  // Statistik
+  const max = Math.max(1, ...state.players.map(p => p.sips));
+  const sorted = [...state.players].sort((a, b) => b.sips - a.sips);
+  $("statsBody").innerHTML = sorted.map(p =>
+    "<tr><td>" + esc(p.name) +
+    '<div class="bar"><i style="width:' + Math.round(p.sips / max * 100) + '%"></i></div></td>' +
+    '<td class="num amber">' + p.sips + "</td>" +
+    '<td class="num">' + p.rolls + "</td>" +
+    '<td class="num">' + p.dreiCount + "</td></tr>"
+  ).join("");
+
+  // Log
+  $("log").innerHTML = state.log.map(l => "<li>" + esc(l) + "</li>").join("");
+
+  save();
+}
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+// ---------- Wurf auswerten ----------
+function roll(){
+  if(state.players.length < 2 || pendingDist) return;
+  const a = 1 + Math.floor(Math.random() * 6);
+  const b = 1 + Math.floor(Math.random() * 6);
+  const d1 = $("die1"), d2 = $("die2");
+  d1.classList.remove("rolling"); d2.classList.remove("rolling");
+  void d1.offsetWidth; // Animation neu starten
+  d1.classList.add("rolling"); d2.classList.add("rolling");
+  setTimeout(() => { renderDie(d1, a); renderDie(d2, b); resolve(a, b); }, 480);
+}
+
+function resolve(a, b){
+  const n = state.players.length;
+  const roller = state.players[state.turn];
+  roller.rolls++;
+  const sum = a + b;
+  const events = [];
+  addLog(roller.name + " würfelt " + a + " + " + b);
+
+  // 1 + 2 → neuer Drei-Mann
+  if((a === 1 && b === 2) || (a === 2 && b === 1)){
+    state.dreiManId = roller.id;
+    roller.dreiCount++;
+    events.push({t: esc(roller.name) + " ist der neue <b>3-Mann</b>!", drei: true});
+    addLog(roller.name + " ist neuer 3-Mann");
+  }
+
+  // Dreien → 3-Mann trinkt pro Drei einen Schluck
+  const threes = (a === 3 ? 1 : 0) + (b === 3 ? 1 : 0);
+  if(threes > 0){
+    const dm = byId(state.dreiManId);
+    if(dm){
+      drink(dm, threes, threes + "× Drei");
+      events.push({t: "3-Mann " + esc(dm.name) + " trinkt <b>" + threes + "</b> (" + threes + "× Drei)", drei: true});
+    }
+  }
+
+  // Summen
+  if(sum === 7){
+    const prev = state.players[(state.turn - 1 + n) % n];
+    drink(prev, 1, "Sieben");
+    events.push({t: "Sieben! <b>" + esc(prev.name) + "</b> (Spieler davor) trinkt 1"});
+  }
+  if(sum === 9){
+    const next = state.players[(state.turn + 1) % n];
+    drink(next, 1, "Neun");
+    events.push({t: "Neun! <b>" + esc(next.name) + "</b> (Spieler danach) trinkt 1"});
+  }
+  if(sum === 10){
+    state.players.forEach(p => p.sips += 1);
+    addLog("Alle trinken 1 (Zehn)");
+    events.push({t: "Zehn! <b>Alle trinken 1</b>"});
+  }
+
+  // Pasch → Augenzahl verteilen
+  if(a === b){
+    pendingDist = {total: a, remaining: a, alloc: {}};
+    events.push({t: "Pasch! " + esc(roller.name) + " verteilt <b>" + a + " Schlücke</b>"});
+  }
+
+  lastRollHadEvent = true;
+  showEvents(events);
+  renderDistPanel();
+  render();
+}
+
+function showEvents(events){
+  $("events").innerHTML = events.length
+    ? events.map(e => '<div class="event' + (e.drei ? ' drei' : '') + '">' + e.t + "</div>").join("")
+    : '<div class="event">Nichts passiert. Glück gehabt.</div>';
+}
+
+// ---------- Pasch verteilen ----------
+function renderDistPanel(){
+  const el = $("distPanel");
+  if(!pendingDist){ el.innerHTML = ""; return; }
+  const roller = state.players[state.turn];
+  el.innerHTML =
+    '<div class="dist">' +
+      "<h3>" + pendingDist.total + " Schlücke verteilen</h3>" +
+      "<p>" + esc(roller.name) + ", noch <b>" + pendingDist.remaining + "</b> übrig:</p>" +
+      state.players.map(p => {
+        const v = pendingDist.alloc[p.id] || 0;
+        return '<div class="dist-row"><span>' + esc(p.name) + "</span>" +
+          '<div class="dist-ctrl">' +
+            '<button data-minus="' + p.id + '"' + (v === 0 ? " disabled" : "") + ">−</button>" +
+            "<span>" + v + "</span>" +
+            '<button data-plus="' + p.id + '"' + (pendingDist.remaining === 0 ? " disabled" : "") + ">+</button>" +
+          "</div></div>";
+      }).join("") +
+      '<button class="btn btn-red" id="distDone" style="width:100%"' +
+        (pendingDist.remaining > 0 ? " disabled" : "") + ">Prost!</button>" +
+    "</div>";
+}
+
+function distClick(e){
+  const plus = e.target.dataset.plus, minus = e.target.dataset.minus;
+  if(plus && pendingDist.remaining > 0){
+    pendingDist.alloc[plus] = (pendingDist.alloc[plus] || 0) + 1;
+    pendingDist.remaining--;
+  }
+  if(minus && (pendingDist.alloc[minus] || 0) > 0){
+    pendingDist.alloc[minus]--;
+    pendingDist.remaining++;
+  }
+  if(e.target.id === "distDone" && pendingDist.remaining === 0){
+    const roller = state.players[state.turn];
+    for(const [id, num] of Object.entries(pendingDist.alloc)){
+      if(num > 0){
+        const p = byId(Number(id));
+        if(p) drink(p, num, "verteilt von " + roller.name);
+      }
+    }
+    pendingDist = null;
+  }
+  renderDistPanel();
+  render();
+}
+
+// ---------- Spielerverwaltung ----------
+function addPlayer(){
+  const name = $("nameInput").value.trim();
+  if(!name) return;
+  state.players.push({id: state.nextId++, name, sips: 0, rolls: 0, dreiCount: 0});
+  $("nameInput").value = "";
+  render();
+}
+function removePlayer(id){
+  const idx = state.players.findIndex(p => p.id === id);
+  if(idx < 0) return;
+  if(state.dreiManId === id) state.dreiManId = null;
+  if(idx < state.turn) state.turn--;
+  state.players.splice(idx, 1);
+  render();
+}
+
+// ---------- Events ----------
+$("rollBtn").addEventListener("click", roll);
+$("nextBtn").addEventListener("click", () => {
+  state.turn = (state.turn + 1) % state.players.length;
+  lastRollHadEvent = false;
+  $("events").innerHTML = "";
+  render();
+});
+$("addBtn").addEventListener("click", addPlayer);
+$("nameInput").addEventListener("keydown", e => { if(e.key === "Enter") addPlayer(); });
+$("playerList").addEventListener("click", e => {
+  if(e.target.dataset.del) removePlayer(Number(e.target.dataset.del));
+});
+$("distPanel").addEventListener("click", distClick);
+$("resetStats").addEventListener("click", () => {
+  if(!confirm("Alle Schlücke & Würfe auf 0 setzen?")) return;
+  state.players.forEach(p => { p.sips = 0; p.rolls = 0; p.dreiCount = 0; });
+  state.log = []; state.dreiManId = null; state.turn = 0;
+  pendingDist = null; lastRollHadEvent = false;
+  $("events").innerHTML = ""; renderDistPanel(); render();
+});
+$("resetAll").addEventListener("click", () => {
+  if(!confirm("Wirklich alles löschen (auch Spieler)?")) return;
+  state = {players: [], turn: 0, dreiManId: null, log: [], nextId: 1};
+  pendingDist = null; lastRollHadEvent = false;
+  $("events").innerHTML = ""; renderDistPanel(); render();
+});
+
+// ---------- Start ----------
+load();
+renderDie($("die1"), null);
+renderDie($("die2"), null);
+render();
+</script>
+</body>
+</html>
