@@ -340,11 +340,12 @@ canvas{width:100%;height:170px;display:block}
   <section>
     <h2>Einstellungen</h2>
     <div class="opt">
-      <div>Sound<small>Würfelgeräusch & Pasch-Fanfare</small></div>
+      <div>Sound<small>Würfelgeräusch & Pasch-Fanfare · iPhone: Stummschalter aus!</small></div>
+      <button class="btn btn-ghost" id="soundTest" style="margin:0;padding:8px 12px">🔊 Test</button>
       <label class="switch"><input type="checkbox" id="optSound"><span class="slider"></span></label>
     </div>
     <div class="opt">
-      <div>Vibration<small>Bei Aktionen (falls vom Gerät unterstützt)</small></div>
+      <div>Vibration<small>Nur Android – iPhone-Browser unterstützen keine Vibration</small></div>
       <label class="switch"><input type="checkbox" id="optVibe"><span class="slider"></span></label>
     </div>
     <div class="opt">
@@ -449,12 +450,33 @@ function ctx(){
   if(!audioCtx){
     try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){}
   }
-  if(audioCtx && audioCtx.state === "suspended") audioCtx.resume();
   return audioCtx;
+}
+// iOS/Android entsperren: beim allerersten Touch/Klick einen stillen Ton abspielen
+function unlockAudio(){
+  const c = ctx(); if(!c) return;
+  if(c.state === "suspended") c.resume();
+  try{
+    const b = c.createBuffer(1, 1, 22050);
+    const s = c.createBufferSource();
+    s.buffer = b; s.connect(c.destination); s.start(0);
+  }catch(e){}
+}
+["touchend","click","pointerdown"].forEach(ev =>
+  document.addEventListener(ev, unlockAudio, {once: true, passive: true})
+);
+// Erst abspielen, wenn der Kontext wirklich läuft
+function ensureAudio(play){
+  const c = ctx(); if(!c) return;
+  if(c.state === "suspended"){
+    c.resume().then(() => play(c)).catch(() => {});
+  }else{
+    play(c);
+  }
 }
 function sndDice(){
   if(!state.settings.sound) return;
-  const c = ctx(); if(!c) return;
+  ensureAudio(c => {
   for(let i = 0; i < 6; i++){
     const t = c.currentTime + i * 0.07 + Math.random() * 0.02;
     const buf = c.createBuffer(1, 1200, c.sampleRate);
@@ -465,15 +487,17 @@ function sndDice(){
     src.connect(g); g.connect(c.destination);
     src.start(t);
   }
+  });
 }
 function sndTone(freq, t0, dur, vol){
-  const c = ctx(); if(!c) return;
+  ensureAudio(c => {
   const o = c.createOscillator(), g = c.createGain();
   o.type = "triangle"; o.frequency.value = freq;
   g.gain.setValueAtTime(vol, c.currentTime + t0);
   g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + t0 + dur);
   o.connect(g); g.connect(c.destination);
   o.start(c.currentTime + t0); o.stop(c.currentTime + t0 + dur + 0.05);
+  });
 }
 function sndFanfare(){
   if(!state.settings.sound) return;
@@ -941,7 +965,11 @@ function syncSettingsUI(){
   $("optShake").checked = state.settings.shake;
   $("optRule11").checked = state.settings.rule11;
 }
-$("optSound").addEventListener("change", e => { state.settings.sound = e.target.checked; if(e.target.checked) ctx(); save(); });
+$("optSound").addEventListener("change", e => { state.settings.sound = e.target.checked; if(e.target.checked) unlockAudio(); save(); });
+$("soundTest").addEventListener("click", () => {
+  unlockAudio();
+  sndTone(523, 0, 0.18, 0.25); sndTone(659, 0.15, 0.18, 0.25); sndTone(784, 0.3, 0.35, 0.3);
+});
 $("optVibe").addEventListener("change", e => { state.settings.vibe = e.target.checked; save(); });
 $("optWake").addEventListener("change", e => { state.settings.wake = e.target.checked; applyWake(); save(); });
 $("optShake").addEventListener("change", e => { state.settings.shake = e.target.checked; applyShake(); save(); });
