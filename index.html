@@ -2,37 +2,50 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#160C05">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#140B1E">
 <title>Drei Mann – Trinkspiel</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Barlow:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --stout:#160C05;
-  --wood:#241207;
-  --card:#2E1A0C;
-  --card-line:#4A2D14;
-  --foam:#FFF6E0;
-  --foam-dim:#CBB794;
-  --beer:#F5A623;
-  --beer-deep:#C97E12;
-  --red:#D64533;
-  --ink:#241E17;
-  --radius:16px;
+  --bg-0:#0A0712;
+  --bg-1:#170E22;
+  --panel:rgba(255,255,255,.045);
+  --panel-strong:rgba(255,255,255,.075);
+  --border:rgba(255,255,255,.09);
+  --border-strong:rgba(255,255,255,.16);
+  --foam:#F7F1E6;
+  --foam-dim:#B4AAAE;
+  --gold:#FFC15E;
+  --gold-deep:#F2843C;
+  --coral:#FF6161;
+  --coral-deep:#D6363B;
+  --ink:#241A12;
+  --radius-xl:26px;
+  --radius-lg:20px;
+  --radius-md:16px;
+  --radius-sm:12px;
+  --shadow-lg:0 24px 60px -20px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.06);
+  --shadow-md:0 14px 34px -14px rgba(0,0,0,.55);
+  --shadow-sm:0 6px 16px -6px rgba(0,0,0,.4);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
-  font-family:'Barlow',sans-serif;
+  font-family:'Plus Jakarta Sans',sans-serif;
   color:var(--foam);
   min-height:100vh;
-  padding-bottom:70px;
-  background:radial-gradient(ellipse 120% 60% at 50% 0%, #3A1E0C 0%, var(--wood) 45%, var(--stout) 100%);
+  padding-bottom:76px;
+  background:
+    radial-gradient(circle at 12% -8%, rgba(255,193,94,.22), transparent 42%),
+    radial-gradient(circle at 108% 6%, rgba(255,97,97,.14), transparent 38%),
+    radial-gradient(ellipse 130% 70% at 50% 105%, rgba(36,21,49,.9), transparent 60%),
+    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 60%, #060409 100%);
   overflow-x:hidden;
 }
 
@@ -40,7 +53,7 @@ body{
 .bubbles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
 .bubble{
   position:absolute;bottom:-60px;border-radius:50%;
-  background:radial-gradient(circle at 35% 30%, rgba(255,246,224,.55), rgba(245,166,35,.18) 60%, transparent 75%);
+  background:radial-gradient(circle at 35% 30%, rgba(255,241,214,.5), rgba(255,193,94,.16) 60%, transparent 75%);
   animation:rise linear infinite;opacity:0;
 }
 @keyframes rise{
@@ -49,7 +62,7 @@ body{
   90%{opacity:.5}
   100%{transform:translateY(-110vh) translateX(24px);opacity:0}
 }
-.wrap{max-width:520px;margin:0 auto;padding:0 16px;position:relative;z-index:1}
+.wrap{max-width:540px;margin:0 auto;padding:0 18px;position:relative;z-index:1}
 
 /* ---------- Konfetti ---------- */
 .confetti-box{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden}
@@ -63,39 +76,44 @@ body{
 }
 
 /* ---------- Kopf ---------- */
-header{padding:30px 0 8px;text-align:center;position:relative}
-.krug{font-size:34px;display:inline-block;transform:rotate(-8deg);filter:drop-shadow(0 3px 4px rgba(0,0,0,.5))}
-.krug.r{transform:rotate(8deg) scaleX(-1)}
+header{padding:calc(36px + env(safe-area-inset-top)) 0 6px;text-align:center;position:relative}
+.krug{font-size:32px;display:inline-block;transform:rotate(-10deg);filter:drop-shadow(0 6px 10px rgba(0,0,0,.5))}
+.krug.r{transform:rotate(10deg) scaleX(-1)}
 .stamp{
   display:inline-block;font-family:'Alfa Slab One',serif;
-  font-size:clamp(36px,10vw,50px);line-height:1;color:var(--foam);
-  padding:6px 14px 4px;transform:rotate(-2deg);letter-spacing:1px;
-  text-shadow:0 4px 0 rgba(0,0,0,.45), 0 0 30px rgba(245,166,35,.35);
-  margin:0 6px;
+  font-size:clamp(34px,9vw,46px);line-height:1;color:var(--foam);
+  padding:4px 8px;transform:rotate(-1.5deg);letter-spacing:.5px;
+  text-shadow:0 6px 18px rgba(0,0,0,.5);
+  margin:0 4px;
 }
 .stamp span{
-  background:linear-gradient(180deg, var(--foam) -20%, var(--beer) 35%, var(--beer-deep) 100%);
+  background:linear-gradient(180deg, #FFF3D6 -10%, var(--gold) 40%, var(--gold-deep) 100%);
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
 }
-header p{margin-top:8px;color:var(--foam-dim);font-size:13px;letter-spacing:2.5px;text-transform:uppercase}
+header p{margin-top:10px;color:var(--foam-dim);font-size:12px;letter-spacing:3px;text-transform:uppercase;font-weight:600}
+
+/* ---------- Glas-Panel (Basis für Karten) ---------- */
+.panel{
+  background:linear-gradient(180deg, var(--panel-strong), var(--panel));
+  border:1px solid var(--border);
+  border-radius:var(--radius-xl);
+  box-shadow:var(--shadow-lg);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  padding:18px;
+}
 
 /* ---------- Bühne ---------- */
-.stage{
-  background:linear-gradient(180deg, rgba(255,246,224,.05), rgba(0,0,0,.35));
-  border:1px solid var(--card-line);
-  border-radius:var(--radius);
-  padding:22px 16px 18px;margin-top:16px;text-align:center;
-  box-shadow:0 10px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,246,224,.08);
-}
-.dice{display:flex;justify-content:center;gap:22px;min-height:92px}
+.stage{margin-top:16px;text-align:center;padding:26px 18px 20px}
+.dice{display:flex;justify-content:center;gap:20px;min-height:92px}
 .die{
-  width:86px;height:86px;
-  background:linear-gradient(160deg, #FFFDF6 0%, #EFE4C8 100%);
-  border-radius:18px;
-  box-shadow:inset 0 -6px 0 rgba(0,0,0,.14), 0 8px 16px rgba(0,0,0,.5);
-  display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:13px;
+  width:84px;height:84px;
+  background:linear-gradient(160deg, #FFFDF8 0%, #F1E7D2 55%, #E8DAB9 100%);
+  border-radius:var(--radius-md);
+  box-shadow:inset 0 -8px 14px rgba(0,0,0,.10), inset 0 2px 0 rgba(255,255,255,.7), 0 14px 26px -8px rgba(0,0,0,.55);
+  display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);padding:12px;
 }
-.die.rolling{animation:tumble .5s ease}
+.die.rolling{animation:tumble .5s cubic-bezier(.25,.8,.4,1)}
 @keyframes tumble{
   0%{transform:rotate(0) translateY(0)}
   30%{transform:rotate(160deg) translateY(-16px)}
@@ -103,158 +121,167 @@ header p{margin-top:8px;color:var(--foam-dim);font-size:13px;letter-spacing:2.5p
   100%{transform:rotate(360deg) translateY(0)}
 }
 .pip{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
-.pip i{width:13px;height:13px;background:var(--ink);border-radius:50%}
-.die[data-v="3"] .pip i{background:var(--red)}
+.pip i{width:12px;height:12px;background:var(--ink);border-radius:50%;box-shadow:inset 0 1px 1px rgba(0,0,0,.25)}
+.die[data-v="3"] .pip i{background:var(--coral)}
 
-.turn{margin-top:16px;font-size:15px;color:var(--foam-dim)}
-.turn b{color:var(--beer);font-size:19px}
-.turn .again{display:block;font-size:13px;color:var(--foam-dim);margin-top:2px}
+.turn{margin-top:16px;font-size:14px;color:var(--foam-dim)}
+.turn b{color:var(--gold);font-size:19px;font-weight:800}
+.turn .again{display:block;font-size:12.5px;color:var(--foam-dim);margin-top:3px}
 
 .btn{
-  font-family:'Barlow',sans-serif;font-weight:800;
-  font-size:19px;letter-spacing:.5px;text-transform:uppercase;
-  border:none;border-radius:14px;cursor:pointer;
+  font-family:inherit;font-weight:700;
+  font-size:16.5px;letter-spacing:.2px;
+  border:none;border-radius:var(--radius-md);cursor:pointer;
   padding:15px 22px;margin-top:14px;
-  transition:transform .06s, filter .15s;
+  transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
 }
-.btn:active{transform:translateY(2px)}
+.btn:active{transform:translateY(2px) scale(.99)}
+@media (hover:hover){ .btn:not(:disabled):hover{transform:translateY(-2px)} }
 .btn-roll{
-  background:linear-gradient(180deg, #FFC85C 0%, var(--beer) 45%, var(--beer-deep) 100%);
+  background:linear-gradient(135deg, #FFD98A 0%, var(--gold) 45%, var(--gold-deep) 100%);
   color:var(--ink);
-  box-shadow:0 5px 0 #7d4e0a, 0 8px 20px rgba(245,166,35,.35);
+  box-shadow:0 10px 24px -8px rgba(242,132,60,.55), inset 0 1px 0 rgba(255,255,255,.5);
   width:100%;
 }
-.btn-ghost{background:transparent;color:var(--foam-dim);border:2px solid var(--card-line);font-size:14px;padding:10px 16px}
-.btn-red{background:var(--red);color:var(--foam);box-shadow:0 4px 0 #7e241c}
-.btn:disabled{filter:grayscale(.7) brightness(.6);cursor:not-allowed;box-shadow:none}
+@media (hover:hover){ .btn-roll:not(:disabled):hover{box-shadow:0 14px 30px -8px rgba(242,132,60,.7), inset 0 1px 0 rgba(255,255,255,.5)} }
+.btn-ghost{background:var(--panel-strong);color:var(--foam);border:1px solid var(--border);font-size:14px;font-weight:600;padding:11px 18px;backdrop-filter:blur(10px)}
+.btn-red{background:linear-gradient(135deg, #FF8A7A, var(--coral) 60%, var(--coral-deep));color:#fff;box-shadow:0 10px 22px -8px rgba(214,54,59,.55)}
+.btn:disabled{filter:grayscale(.6) brightness(.55);cursor:not-allowed;box-shadow:none;transform:none}
 .btn-undo{margin-top:10px;width:100%}
 
 /* ---------- Ereignisse ---------- */
 .events{margin-top:14px;display:flex;flex-direction:column;gap:8px}
 .event{
-  background:var(--foam);color:var(--ink);
-  border-radius:12px;padding:11px 14px;
-  font-weight:600;font-size:15px;text-align:left;
-  border-left:6px solid var(--beer);
-  animation:pop .25s ease;
+  background:linear-gradient(180deg, #FFFDF7, #F5EEDF);color:var(--ink);
+  border-radius:var(--radius-sm);padding:12px 14px;
+  font-weight:600;font-size:14.5px;text-align:left;
+  border-left:5px solid var(--gold);box-shadow:var(--shadow-sm);
+  animation:pop .28s cubic-bezier(.25,1,.4,1);
 }
-.event.drei{border-left-color:var(--red)}
-.event.calm{background:rgba(255,246,224,.12);color:var(--foam-dim);border-left-color:var(--card-line)}
+.event.drei{border-left-color:var(--coral)}
+.event.calm{background:var(--panel-strong);color:var(--foam-dim);border-left-color:var(--border-strong);box-shadow:none}
 @keyframes pop{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
 
 /* ---------- Verteilen ---------- */
-.dist{margin-top:14px;background:var(--foam);color:var(--ink);border-radius:var(--radius);padding:16px;text-align:left}
-.dist h3{font-family:'Alfa Slab One',serif;font-size:18px;margin-bottom:4px}
-.dist p{font-size:14px;margin-bottom:10px}
-.dist-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px dashed #CBB794}
+.dist{margin-top:14px;background:linear-gradient(180deg, #FFFDF7, #F5EEDF);color:var(--ink);border-radius:var(--radius-lg);padding:16px;text-align:left;box-shadow:var(--shadow-md)}
+.dist h3{font-family:'Alfa Slab One',serif;font-size:17px;margin-bottom:4px;color:#2B1C10}
+.dist p{font-size:13.5px;margin-bottom:10px;color:#5A4A38}
+.dist-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px dashed rgba(0,0,0,.12)}
 .dist-row:last-of-type{border-bottom:none}
 .dist-ctrl{display:flex;align-items:center;gap:12px}
-.dist-ctrl button{width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;font-size:20px;font-weight:800;background:var(--wood);color:var(--foam)}
-.dist-ctrl button:disabled{opacity:.3;cursor:not-allowed}
-.dist-ctrl span{min-width:20px;text-align:center;font-weight:800;font-size:18px}
+.dist-ctrl button{width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;font-size:19px;font-weight:800;background:var(--ink);color:var(--foam);box-shadow:0 4px 10px -2px rgba(0,0,0,.3)}
+.dist-ctrl button:disabled{opacity:.25;cursor:not-allowed;box-shadow:none}
+.dist-ctrl span{min-width:20px;text-align:center;font-weight:800;font-size:17px}
 
 /* ---------- Sektionen ---------- */
-section{margin-top:24px}
+section{margin-top:30px}
 h2{
-  font-family:'Alfa Slab One',serif;font-size:16px;letter-spacing:1.5px;
+  font-family:'Alfa Slab One',serif;font-size:14.5px;letter-spacing:1.5px;
   text-transform:uppercase;color:var(--foam-dim);
-  display:flex;align-items:center;gap:10px;margin-bottom:10px;
+  display:flex;align-items:center;gap:10px;margin-bottom:12px;
 }
-h2::after{content:"";flex:1;height:2px;background:var(--card-line)}
+h2::after{content:"";flex:1;height:1px;background:linear-gradient(90deg, var(--border-strong), transparent)}
 
 /* ---------- Spieler ---------- */
 .player{
   display:flex;align-items:center;gap:10px;
-  background:var(--card);border:1px solid var(--card-line);
-  border-radius:14px;padding:12px 14px;margin-bottom:8px;
+  padding:12px 4px;border-bottom:1px solid rgba(255,255,255,.06);
 }
+.player:last-child{border-bottom:none}
 .player.active{
-  border-color:var(--beer);
-  background:linear-gradient(90deg, rgba(245,166,35,.16), var(--card) 70%);
-  box-shadow:0 0 18px rgba(245,166,35,.15);
+  background:linear-gradient(90deg, rgba(255,193,94,.14), transparent 85%);
+  border-radius:var(--radius-md);margin:0 -8px;padding:12px 8px;
+  box-shadow:inset 0 0 0 1px rgba(255,193,94,.25);
 }
-.pmoji{font-size:24px;background:none;border:none;cursor:pointer;padding:2px;line-height:1}
-.pdot{width:6px;height:26px;border-radius:3px;flex:none}
-.player .name{font-weight:600;font-size:17px;flex:1}
-.player .sips{font-family:'Alfa Slab One',serif;font-size:23px;color:var(--beer);min-width:44px;text-align:right}
-.player .sips small{font-family:'Barlow';font-size:10px;display:block;color:var(--foam-dim);text-transform:uppercase;letter-spacing:1px}
+.pmoji{font-size:23px;background:none;border:none;cursor:pointer;padding:2px;line-height:1;transition:transform .15s}
+.pmoji:active{transform:scale(1.15)}
+.pdot{width:5px;height:24px;border-radius:3px;flex:none}
+.player .name{font-weight:600;font-size:16px;flex:1;color:var(--foam)}
+.player .sips{font-family:'Alfa Slab One',serif;font-size:21px;color:var(--gold);min-width:44px;text-align:right}
+.player .sips small{font-family:'Plus Jakarta Sans';font-size:9.5px;display:block;color:var(--foam-dim);text-transform:uppercase;letter-spacing:1px;font-weight:600}
 .badge3{
-  font-family:'Alfa Slab One',serif;background:var(--red);color:var(--foam);
-  font-size:13px;padding:4px 9px;border-radius:8px;transform:rotate(-4deg);
-  box-shadow:0 2px 0 rgba(0,0,0,.35);animation:pop .3s ease;
+  font-family:'Alfa Slab One',serif;background:linear-gradient(135deg, #FF8A7A, var(--coral));color:#fff;
+  font-size:11.5px;padding:4px 9px;border-radius:8px;transform:rotate(-3deg);
+  box-shadow:0 4px 10px -3px rgba(214,54,59,.5);animation:pop .3s ease;
 }
-.remove{background:none;border:none;color:var(--foam-dim);cursor:pointer;font-size:18px;padding:4px 6px}
+.remove{background:none;border:none;color:var(--foam-dim);cursor:pointer;font-size:17px;padding:4px 6px;opacity:.6;transition:opacity .15s}
+.remove:hover{opacity:1}
 
 /* ---------- Statistik ---------- */
-table{width:100%;border-collapse:collapse;font-size:14px}
-th{text-align:left;color:var(--foam-dim);font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:6px 3px;border-bottom:2px solid var(--card-line)}
-td{padding:9px 3px;border-bottom:1px solid rgba(255,246,224,.08)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;color:var(--foam-dim);font-size:10.5px;text-transform:uppercase;letter-spacing:1px;font-weight:700;padding:8px 4px;border-bottom:1px solid var(--border-strong)}
+td{padding:10px 4px;border-bottom:1px solid rgba(255,255,255,.06);color:var(--foam)}
+tr:last-child td{border-bottom:none}
 td.num{text-align:right;font-weight:800}
-td.num.amber{color:var(--beer)}
-.bar{height:8px;background:var(--card-line);border-radius:4px;overflow:hidden;margin-top:5px}
-.bar i{display:block;height:100%;background:linear-gradient(90deg, var(--beer-deep), var(--beer))}
+td.num.amber{color:var(--gold)}
+.bar{height:6px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg, var(--gold-deep), var(--gold))}
 
 /* ---------- Awards ---------- */
-.awards{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.awards{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 .award{
-  background:var(--card);border:1px solid var(--card-line);border-radius:12px;
-  padding:9px 12px;font-size:13px;display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:9px 12px;font-size:12.5px;display:flex;align-items:center;gap:8px;color:var(--foam);
 }
-.award b{color:var(--beer)}
-.award .aico{font-size:20px}
+.award b{color:var(--gold)}
+.award .aico{font-size:19px}
 
 /* ---------- Diagramme ---------- */
-.chart-card{background:rgba(0,0,0,.25);border:1px solid var(--card-line);border-radius:var(--radius);padding:14px;margin-bottom:12px}
-.chart-card h3{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--foam-dim);margin-bottom:10px}
+.chart-card{margin-bottom:14px}
+.chart-card:last-of-type{margin-bottom:0}
+.chart-card h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--foam-dim);margin-bottom:12px;font-weight:700}
 .distrib{display:flex;align-items:flex-end;gap:5px;height:120px}
 .dcol{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative}
-.dcol .dbar{width:100%;background:linear-gradient(180deg, var(--beer), var(--beer-deep));border-radius:4px 4px 0 0;min-height:2px}
-.dcol .exp{position:absolute;left:0;right:0;height:0;border-top:2px dashed rgba(255,246,224,.45)}
-.dcol .dlab{font-size:11px;color:var(--foam-dim);margin-top:5px}
-.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--foam-dim);margin-top:8px}
+.dcol .dbar{width:100%;background:linear-gradient(180deg, var(--gold), var(--gold-deep));border-radius:6px 6px 2px 2px;min-height:2px}
+.dcol .exp{position:absolute;left:0;right:0;height:0;border-top:2px dashed rgba(255,255,255,.3)}
+.dcol .dlab{font-size:10.5px;color:var(--foam-dim);margin-top:6px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:11.5px;color:var(--foam-dim);margin-top:10px}
 .legend span{display:flex;align-items:center;gap:5px}
 .legend i{width:10px;height:10px;border-radius:3px;display:inline-block}
 canvas{width:100%;height:170px;display:block}
-.chart-note{font-size:11px;color:var(--foam-dim);margin-top:6px}
+.chart-note{font-size:10.5px;color:var(--foam-dim);margin-top:8px}
 
 /* ---------- Hausregeln & Einstellungen ---------- */
 .opt{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
-  background:var(--card);border:1px solid var(--card-line);border-radius:12px;
-  padding:11px 14px;margin-bottom:8px;font-size:15px;
+  padding:13px 2px;border-bottom:1px solid rgba(255,255,255,.06);font-size:14.5px;color:var(--foam);
 }
-.opt small{display:block;color:var(--foam-dim);font-size:12px;margin-top:1px}
-.switch{position:relative;width:48px;height:28px;flex:none}
+.opt:last-child{border-bottom:none}
+.opt small{display:block;color:var(--foam-dim);font-size:11.5px;margin-top:2px;font-weight:400}
+.switch{position:relative;width:46px;height:26px;flex:none}
 .switch input{opacity:0;width:0;height:0}
 .slider{
-  position:absolute;inset:0;background:var(--card-line);border-radius:14px;
+  position:absolute;inset:0;background:rgba(255,255,255,.12);border-radius:14px;
   cursor:pointer;transition:.2s;
 }
 .slider::before{
-  content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;
-  background:var(--foam);border-radius:50%;transition:.2s;
+  content:"";position:absolute;width:20px;height:20px;left:3px;top:3px;
+  background:var(--foam);border-radius:50%;transition:.2s;box-shadow:0 2px 6px rgba(0,0,0,.3);
 }
-.switch input:checked + .slider{background:var(--beer)}
+.switch input:checked + .slider{background:linear-gradient(135deg, var(--gold), var(--gold-deep))}
 .switch input:checked + .slider::before{transform:translateX(20px)}
 .rule-item{
   display:flex;align-items:center;gap:10px;
-  background:rgba(245,166,35,.1);border:1px dashed var(--beer-deep);
-  border-radius:10px;padding:9px 12px;margin-bottom:6px;font-size:14px;
+  background:rgba(255,193,94,.08);border:1px dashed rgba(255,193,94,.4);
+  border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:8px;font-size:13.5px;color:var(--foam);
 }
+.rule-item:last-child{margin-bottom:0}
 .rule-item span{flex:1}
 
 /* ---------- Log & Setup ---------- */
-.log{list-style:none;font-size:13px;color:var(--foam-dim)}
-.log li{padding:5px 0;border-bottom:1px dashed rgba(255,246,224,.08)}
-.add-row{display:flex;gap:8px;margin-bottom:10px}
+.log{list-style:none;font-size:12.5px;color:var(--foam-dim)}
+.log li{padding:8px 2px;border-bottom:1px dashed rgba(255,255,255,.08)}
+.log li:last-child{border-bottom:none}
+.add-row{display:flex;gap:8px;margin-top:14px}
+.add-row:first-child{margin-top:0}
 .add-row input{
-  flex:1;padding:12px 14px;border-radius:12px;border:2px solid var(--card-line);
-  background:rgba(0,0,0,.3);color:var(--foam);font-size:16px;font-family:'Barlow';
+  flex:1;padding:13px 16px;border-radius:var(--radius-md);border:1px solid var(--border);
+  background:rgba(0,0,0,.25);color:var(--foam);font-size:15px;font-family:inherit;
 }
 .add-row input::placeholder{color:var(--foam-dim)}
 .add-row .btn{margin-top:0}
-.hint{font-size:13px;color:var(--foam-dim);margin-top:6px}
-.footer-btns{margin-top:28px;display:flex;gap:10px;flex-wrap:wrap}
+.hint{font-size:12.5px;color:var(--foam-dim);margin-top:10px;line-height:1.5}
+.footer-btns{margin-top:32px;display:flex;gap:10px;flex-wrap:wrap;padding-bottom:8px}
 @media (prefers-reduced-motion: reduce){
   .die.rolling,.event,.badge3,.confetti{animation:none}
   .bubble{display:none}
@@ -271,7 +298,7 @@ canvas{width:100%;height:170px;display:block}
   </header>
 
   <!-- Bühne -->
-  <div class="stage">
+  <div class="stage panel">
     <div class="dice">
       <div class="die" id="die1"></div>
       <div class="die" id="die2"></div>
@@ -286,35 +313,39 @@ canvas{width:100%;height:170px;display:block}
   <!-- Spieler -->
   <section>
     <h2>Spieler</h2>
-    <div id="playerList"></div>
-    <div class="add-row">
-      <input type="text" id="nameInput" placeholder="Name…" maxlength="20">
-      <button class="btn btn-ghost" id="addBtn">+ Dazu</button>
+    <div class="panel">
+      <div id="playerList"></div>
+      <div class="add-row">
+        <input type="text" id="nameInput" placeholder="Name…" maxlength="20">
+        <button class="btn btn-ghost" id="addBtn">+ Dazu</button>
+      </div>
+      <p class="hint">Mindestens 2 Spieler. Reihenfolge = Sitzordnung. Tipp: aufs Emoji tippen zum Wechseln.</p>
     </div>
-    <p class="hint">Mindestens 2 Spieler. Reihenfolge = Sitzordnung. Tipp: aufs Emoji tippen zum Wechseln.</p>
   </section>
 
   <!-- Statistik -->
   <section>
     <h2>Statistik</h2>
-    <table>
-      <thead>
-        <tr><th>Spieler</th><th style="text-align:right">Schlücke</th><th style="text-align:right">Würfe</th><th style="text-align:right">Pasche</th><th style="text-align:right">3-Mann</th></tr>
-      </thead>
-      <tbody id="statsBody"></tbody>
-    </table>
-    <div class="awards" id="awards"></div>
+    <div class="panel">
+      <table>
+        <thead>
+          <tr><th>Spieler</th><th style="text-align:right">Schlücke</th><th style="text-align:right">Würfe</th><th style="text-align:right">Pasche</th><th style="text-align:right">3-Mann</th></tr>
+        </thead>
+        <tbody id="statsBody"></tbody>
+      </table>
+      <div class="awards" id="awards"></div>
+    </div>
   </section>
 
   <!-- Diagramme -->
   <section>
     <h2>Diagramme</h2>
-    <div class="chart-card">
+    <div class="chart-card panel">
       <h3>Wurf-Verteilung (Summe 2–12)</h3>
       <div class="distrib" id="distrib"></div>
       <p class="chart-note">Gestrichelte Linie = theoretische Erwartung bei fairen Würfeln.</p>
     </div>
-    <div class="chart-card">
+    <div class="chart-card panel">
       <h3>Schlücke im Verlauf</h3>
       <canvas id="lineChart" width="480" height="170"></canvas>
       <div class="legend" id="lineLegend"></div>
@@ -324,44 +355,50 @@ canvas{width:100%;height:170px;display:block}
   <!-- Hausregeln -->
   <section>
     <h2>Hausregeln</h2>
-    <div class="opt">
-      <div>Elfer-Regel<small>Bei Summe 11 trinkt der Werfer selbst 1</small></div>
-      <label class="switch"><input type="checkbox" id="optRule11"><span class="slider"></span></label>
+    <div class="panel">
+      <div class="opt">
+        <div>Elfer-Regel<small>Bei Summe 11 trinkt der Werfer selbst 1</small></div>
+        <label class="switch"><input type="checkbox" id="optRule11"><span class="slider"></span></label>
+      </div>
+      <div id="ruleList"></div>
+      <div class="add-row">
+        <input type="text" id="ruleInput" placeholder="Eigene Regel notieren…" maxlength="120">
+        <button class="btn btn-ghost" id="ruleAddBtn">+ Regel</button>
+      </div>
+      <p class="hint">Klassiker: Wer einen Doppel-6-Pasch würfelt, darf eine neue Regel erfinden.</p>
     </div>
-    <div id="ruleList"></div>
-    <div class="add-row">
-      <input type="text" id="ruleInput" placeholder="Eigene Regel notieren…" maxlength="120">
-      <button class="btn btn-ghost" id="ruleAddBtn">+ Regel</button>
-    </div>
-    <p class="hint">Klassiker: Wer einen Doppel-6-Pasch würfelt, darf eine neue Regel erfinden.</p>
   </section>
 
   <!-- Einstellungen -->
   <section>
     <h2>Einstellungen</h2>
-    <div class="opt">
-      <div>Sound<small>Würfelgeräusch & Pasch-Fanfare · iPhone: Stummschalter aus!</small></div>
-      <button class="btn btn-ghost" id="soundTest" style="margin:0;padding:8px 12px">🔊 Test</button>
-      <label class="switch"><input type="checkbox" id="optSound"><span class="slider"></span></label>
-    </div>
-    <div class="opt">
-      <div>Vibration<small>Nur Android – iPhone-Browser unterstützen keine Vibration</small></div>
-      <label class="switch"><input type="checkbox" id="optVibe"><span class="slider"></span></label>
-    </div>
-    <div class="opt">
-      <div>Bildschirm anlassen<small>Verhindert das Sperren während des Spiels</small></div>
-      <label class="switch"><input type="checkbox" id="optWake"><span class="slider"></span></label>
-    </div>
-    <div class="opt">
-      <div>Schütteln zum Würfeln<small>Handy schütteln statt Button drücken</small></div>
-      <label class="switch"><input type="checkbox" id="optShake"><span class="slider"></span></label>
+    <div class="panel">
+      <div class="opt">
+        <div>Sound<small>Würfelgeräusch & Pasch-Fanfare · iPhone: Stummschalter aus!</small></div>
+        <button class="btn btn-ghost" id="soundTest" style="margin:0;padding:8px 12px">🔊 Test</button>
+        <label class="switch"><input type="checkbox" id="optSound"><span class="slider"></span></label>
+      </div>
+      <div class="opt">
+        <div>Vibration<small>Nur Android – iPhone-Browser unterstützen keine Vibration</small></div>
+        <label class="switch"><input type="checkbox" id="optVibe"><span class="slider"></span></label>
+      </div>
+      <div class="opt">
+        <div>Bildschirm anlassen<small>Verhindert das Sperren während des Spiels</small></div>
+        <label class="switch"><input type="checkbox" id="optWake"><span class="slider"></span></label>
+      </div>
+      <div class="opt">
+        <div>Schütteln zum Würfeln<small>Handy schütteln statt Button drücken</small></div>
+        <label class="switch"><input type="checkbox" id="optShake"><span class="slider"></span></label>
+      </div>
     </div>
   </section>
 
   <!-- Verlauf -->
   <section>
     <h2>Verlauf</h2>
-    <ul class="log" id="log"></ul>
+    <div class="panel">
+      <ul class="log" id="log"></ul>
+    </div>
   </section>
 
   <div class="footer-btns">
@@ -391,7 +428,7 @@ canvas{width:100%;height:170px;display:block}
 
 // ================= Zustand =================
 const EMOJIS = ["🍺","🍻","🥴","🎲","🔥","🍀","👑","💀","🦁","🐙","🤠","🧙"];
-const COLORS = ["#F5A623","#5CC1E8","#E8615C","#7FD65C","#C77CE8","#E8D25C","#5CE8B8","#E88A5C"];
+const COLORS = ["#FFC15E","#5EC8E0","#FF6B6B","#63D9A6","#B18CF0","#F2D65C","#4FD3C4","#F2955C"];
 
 function freshState(){
   return {
@@ -516,7 +553,7 @@ function vibe(pattern){
 // ================= Konfetti =================
 function confetti(n){
   const box = $("confettiBox");
-  const cols = ["#F5A623","#FFF6E0","#D64533","#FFC85C"];
+  const cols = ["#FFC15E","#F7F1E6","#FF6161","#FFD98A"];
   for(let i = 0; i < n; i++){
     const c = document.createElement("div");
     c.className = "confetti";
@@ -919,7 +956,7 @@ function exportCSV(){
   );
   const dist = "\n\nSumme;Anzahl\n" +
     Array.from({length: 11}, (_, i) => (i + 2) + ";" + state.dist[i + 2]).join("\n");
-  const csv = "\uFEFF" + head + "\n" + rows.join("\n") + dist;
+  const csv = "﻿" + head + "\n" + rows.join("\n") + dist;
   const blob = new Blob([csv], {type: "text/csv;charset=utf-8"});
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);

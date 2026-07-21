@@ -1,4 +1,4 @@
-const CACHE = "dreimann-v2";
+const CACHE = "dreimann-v3";
 const ASSETS = ["./", "./index.html", "./manifest.json", "./icon.svg"];
 
 self.addEventListener("install", e => {
