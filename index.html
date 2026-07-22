@@ -149,17 +149,34 @@ header p{margin-top:10px;color:var(--foam-dim);font-size:12px;letter-spacing:3px
 .btn:disabled{filter:grayscale(.6) brightness(.55);cursor:not-allowed;box-shadow:none;transform:none}
 .btn-undo{margin-top:10px;width:100%}
 
-/* ---------- Ereignisse ---------- */
-.events{margin-top:14px;display:flex;flex-direction:column;gap:8px}
-.event{
-  background:linear-gradient(180deg, #FFFDF7, #F5EEDF);color:var(--ink);
-  border-radius:var(--radius-sm);padding:12px 14px;
-  font-weight:600;font-size:14.5px;text-align:left;
-  border-left:5px solid var(--gold);box-shadow:var(--shadow-sm);
-  animation:pop .28s cubic-bezier(.25,1,.4,1);
+/* ---------- Banner (Ereignis-Überlagerung) ---------- */
+.banner-overlay{
+  position:fixed;inset:0;z-index:70;display:flex;align-items:flex-start;justify-content:center;
+  padding:calc(18vh + env(safe-area-inset-top)) 20px 20px;
+  opacity:0;pointer-events:none;transition:opacity .22s ease;
+  background:rgba(6,4,9,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+  cursor:pointer;
 }
-.event.drei{border-left-color:var(--coral)}
-.event.calm{background:var(--panel-strong);color:var(--foam-dim);border-left-color:var(--border-strong);box-shadow:none}
+.banner-overlay.show{opacity:1;pointer-events:auto}
+.banner-card{
+  width:100%;max-width:460px;
+  background:linear-gradient(160deg, #FFE9B8 0%, var(--gold) 55%, var(--gold-deep) 100%);
+  color:var(--ink);border-radius:var(--radius-xl);padding:22px 22px 18px;
+  box-shadow:0 30px 70px -18px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.6);
+  transform:scale(.85) translateY(-14px);opacity:0;
+  transition:transform .32s cubic-bezier(.2,1.4,.4,1), opacity .22s ease;
+}
+.banner-overlay.show .banner-card{transform:scale(1) translateY(0);opacity:1}
+.banner-card.drei{background:linear-gradient(160deg, #FFB8AE 0%, var(--coral) 55%, var(--coral-deep) 100%)}
+.banner-card.calm{background:linear-gradient(160deg, #3A2E48, #241831);color:var(--foam)}
+.banner-line{font-weight:800;font-size:19px;line-height:1.35;text-align:left}
+.banner-line + .banner-line{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(0,0,0,.15)}
+.banner-card.calm .banner-line{border-top-color:rgba(255,255,255,.15)}
+.banner-hint{margin-top:14px;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:.6;text-align:center}
+.banner-timer{height:4px;border-radius:2px;background:rgba(0,0,0,.18);margin-top:12px;overflow:hidden}
+.banner-card.calm .banner-timer{background:rgba(255,255,255,.15)}
+.banner-timer i{display:block;height:100%;background:currentColor;opacity:.55;width:100%;transform-origin:left;animation:shrink linear forwards}
+@keyframes shrink{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 @keyframes pop{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}
 
 /* ---------- Verteilen ---------- */
@@ -283,7 +300,7 @@ canvas{width:100%;height:170px;display:block}
 .hint{font-size:12.5px;color:var(--foam-dim);margin-top:10px;line-height:1.5}
 .footer-btns{margin-top:32px;display:flex;gap:10px;flex-wrap:wrap;padding-bottom:8px}
 @media (prefers-reduced-motion: reduce){
-  .die.rolling,.event,.badge3,.confetti{animation:none}
+  .die.rolling,.badge3,.confetti,.banner-timer i{animation:none}
   .bubble{display:none}
 }
 </style>
@@ -291,6 +308,9 @@ canvas{width:100%;height:170px;display:block}
 <body>
 <div class="bubbles" id="bubbles"></div>
 <div class="confetti-box" id="confettiBox"></div>
+<div class="banner-overlay" id="bannerOverlay">
+  <div class="banner-card" id="bannerCard"></div>
+</div>
 <div class="wrap">
   <header>
     <span class="krug">🍺</span><div class="stamp">DREI <span>MANN</span></div><span class="krug r">🍺</span>
@@ -306,7 +326,6 @@ canvas{width:100%;height:170px;display:block}
     <div class="turn" id="turnInfo"></div>
     <button class="btn btn-roll" id="rollBtn">Würfeln</button>
     <button class="btn btn-ghost btn-undo" id="undoBtn" style="display:none">↩ Letzten Wurf rückgängig</button>
-    <div class="events" id="events"></div>
     <div id="distPanel"></div>
   </div>
 
@@ -319,13 +338,13 @@ canvas{width:100%;height:170px;display:block}
         <input type="text" id="nameInput" placeholder="Name…" maxlength="20">
         <button class="btn btn-ghost" id="addBtn">+ Dazu</button>
       </div>
-      <p class="hint">Mindestens 2 Spieler. Reihenfolge = Sitzordnung. Tipp: aufs Emoji tippen zum Wechseln.</p>
+      <p class="hint">Mindestens 2 Spieler. Reihenfolge = Sitzordnung. Tipp: aufs Emoji tippen zum Wechseln. Die Spieler bleiben über mehrere Spiele erhalten.</p>
     </div>
   </section>
 
-  <!-- Statistik -->
+  <!-- Statistik (aktuelles Spiel) -->
   <section>
-    <h2>Statistik</h2>
+    <h2>Statistik – aktuelles Spiel</h2>
     <div class="panel">
       <table>
         <thead>
@@ -334,6 +353,21 @@ canvas{width:100%;height:170px;display:block}
         <tbody id="statsBody"></tbody>
       </table>
       <div class="awards" id="awards"></div>
+    </div>
+  </section>
+
+  <!-- Gesamtstatistik (spielübergreifend) -->
+  <section>
+    <h2>Gesamtstatistik</h2>
+    <div class="panel">
+      <p class="hint" id="totalGamesHint" style="margin-top:0">Noch keine beendeten Spiele.</p>
+      <table>
+        <thead>
+          <tr><th>Spieler</th><th style="text-align:right">Spiele</th><th style="text-align:right">Schlücke</th><th style="text-align:right">Ø/Spiel</th><th style="text-align:right">Rekord</th></tr>
+        </thead>
+        <tbody id="lifetimeBody"></tbody>
+      </table>
+      <p class="hint">Werte kommen dazu, sobald du unten ein Spiel mit „🏁 Spiel beenden“ abschließt.</p>
     </div>
   </section>
 
@@ -403,7 +437,7 @@ canvas{width:100%;height:170px;display:block}
 
   <div class="footer-btns">
     <button class="btn btn-ghost" id="csvBtn">📊 CSV-Export</button>
-    <button class="btn btn-ghost" id="resetStats">Statistik zurücksetzen</button>
+    <button class="btn btn-ghost" id="endGameBtn">🏁 Spiel beenden</button>
     <button class="btn btn-ghost" id="resetAll">Alles zurücksetzen</button>
   </div>
 </div>
@@ -430,9 +464,12 @@ canvas{width:100%;height:170px;display:block}
 const EMOJIS = ["🍺","🍻","🥴","🎲","🔥","🍀","👑","💀","🦁","🐙","🤠","🧙"];
 const COLORS = ["#FFC15E","#5EC8E0","#FF6B6B","#63D9A6","#B18CF0","#F2D65C","#4FD3C4","#F2955C"];
 
+function freshLifetime(){
+  return {games: 0, sips: 0, rolls: 0, pasch: 0, dreiCount: 0, dreiRolls: 0, given: 0, bestGame: 0};
+}
 function freshState(){
   return {
-    players: [],       // {id,name,sips,rolls,dreiCount,paschCount,dreiRolls,given,emoji,color}
+    players: [],       // {id,name,sips,rolls,dreiCount,paschCount,dreiRolls,given,emoji,color,lifetime}
     turn: 0,
     dreiManId: null,
     log: [],
@@ -441,6 +478,7 @@ function freshState(){
     history: [],               // [{r, s:{id:sips}}]
     rollNo: 0,
     rules: [],
+    totalGames: 0,     // Anzahl beendeter Spiele (spielübergreifend)
     settings: {sound: true, vibe: true, wake: false, shake: false, rule11: false}
   };
 }
@@ -459,12 +497,14 @@ function load(){
     state = Object.assign(freshState(), s);
     state.settings = Object.assign(freshState().settings, s.settings || {});
     if(!Array.isArray(state.dist) || state.dist.length !== 13) state.dist = Array(13).fill(0);
+    if(state.totalGames == null) state.totalGames = 0;
     state.players.forEach((p, i) => {
       if(p.paschCount == null) p.paschCount = 0;
       if(p.dreiRolls == null) p.dreiRolls = 0;
       if(p.given == null) p.given = 0;
       if(!p.emoji) p.emoji = EMOJIS[i % EMOJIS.length];
       if(!p.color) p.color = COLORS[i % COLORS.length];
+      if(!p.lifetime) p.lifetime = freshLifetime();
     });
   }catch(e){}
 }
@@ -660,6 +700,7 @@ function render(){
   ).join("");
 
   renderAwards();
+  renderLifetimeStats();
   renderDistrib();
   renderLineChart();
   renderRules();
@@ -693,6 +734,22 @@ function renderAwards(){
     '<div class="award"><span class="aico">' + a.i + "</span><span><b>" + a.t + ":</b> " +
     esc(a.p.name) + " (" + a.v + ")</span></div>"
   ).join("");
+}
+
+// ================= Gesamtstatistik (spielübergreifend) =================
+function renderLifetimeStats(){
+  $("totalGamesHint").textContent = state.totalGames > 0
+    ? "Insgesamt " + state.totalGames + (state.totalGames === 1 ? " beendetes Spiel." : " beendete Spiele.")
+    : "Noch keine beendeten Spiele.";
+  const sorted = [...state.players].sort((a, b) => b.lifetime.sips - a.lifetime.sips);
+  $("lifetimeBody").innerHTML = sorted.map(p => {
+    const avg = p.lifetime.games > 0 ? Math.round(p.lifetime.sips / p.lifetime.games * 10) / 10 : 0;
+    return "<tr><td>" + p.emoji + " " + esc(p.name) + "</td>" +
+      '<td class="num">' + p.lifetime.games + "</td>" +
+      '<td class="num amber">' + p.lifetime.sips + "</td>" +
+      '<td class="num">' + avg + "</td>" +
+      '<td class="num">' + p.lifetime.bestGame + "</td></tr>";
+  }).join("");
 }
 
 // ================= Wurf-Verteilung =================
@@ -756,6 +813,7 @@ function renderRules(){
 // ================= Wurf =================
 function roll(){
   if(state.players.length < 2 || pendingDist || busy) return;
+  hideBanner();
   undoSnap = JSON.stringify(state);
   busy = true;
   render();
@@ -849,7 +907,7 @@ function resolve(a, b){
   if(state.history.length > 240) state.history = state.history.filter((_, i) => i % 2 === 0);
 
   if(hadAction){
-    showEvents(events);
+    showBanner(events, 4000);
     busy = false;
     renderDistPanel();
     render();
@@ -857,7 +915,7 @@ function resolve(a, b){
       $("turnInfo").innerHTML = "Am Zug: <b>" + esc(roller.name) + "</b><span class=\"again\">Aktion! Nochmal würfeln 🎲</span>";
     }
   }else{
-    showEvents([{t: "Nichts passiert (" + a + "+" + b + " = " + sum + "). Weiter geht's…", calm: true}]);
+    showBanner([{t: "Nichts passiert (" + a + "+" + b + " = " + sum + "). Weiter geht's…", calm: true}], 1400);
     renderDistPanel();
     render();
     setTimeout(() => {
@@ -870,10 +928,23 @@ function resolve(a, b){
   }
 }
 
-function showEvents(events){
-  $("events").innerHTML = events.map(e =>
-    '<div class="event' + (e.drei ? ' drei' : '') + (e.calm ? ' calm' : '') + '">' + e.t + "</div>"
-  ).join("");
+let bannerTimer = null;
+function showBanner(events, autoMs){
+  const isDrei = events.some(e => e.drei);
+  const isCalm = events.every(e => e.calm);
+  const card = $("bannerCard");
+  card.className = "banner-card" + (isCalm ? " calm" : (isDrei ? " drei" : ""));
+  card.innerHTML =
+    events.map(e => '<div class="banner-line">' + e.t + "</div>").join("") +
+    (autoMs ? '<div class="banner-timer"><i style="animation-duration:' + autoMs + 'ms"></i></div>' : "") +
+    '<div class="banner-hint">Tippen zum Schließen</div>';
+  $("bannerOverlay").classList.add("show");
+  clearTimeout(bannerTimer);
+  if(autoMs) bannerTimer = setTimeout(hideBanner, autoMs);
+}
+function hideBanner(){
+  $("bannerOverlay").classList.remove("show");
+  clearTimeout(bannerTimer);
 }
 
 // ================= Undo =================
@@ -884,7 +955,7 @@ function undo(){
   }catch(e){ return; }
   undoSnap = null;
   pendingDist = null;
-  $("events").innerHTML = '<div class="event calm">Letzter Wurf rückgängig gemacht.</div>';
+  showBanner([{t: "Letzter Wurf rückgängig gemacht.", calm: true}], 1600);
   renderDie($("die1"), null); renderDie($("die2"), null);
   renderDistPanel();
   syncSettingsUI();
@@ -950,10 +1021,11 @@ function distClick(e){
 
 // ================= CSV-Export =================
 function exportCSV(){
-  const head = "Spieler;Schlücke;Würfe;Pasche;3-Mann geworden;Würfe als 3-Mann;Schlücke verteilt";
-  const rows = state.players.map(p =>
-    [p.name, p.sips, p.rolls, p.paschCount, p.dreiCount, p.dreiRolls, p.given].join(";")
-  );
+  const head = "Spieler;Schlücke (aktuell);Würfe (aktuell);Pasche (aktuell);3-Mann (aktuell);Spiele gesamt;Schlücke gesamt;Ø Schlücke/Spiel;Rekord-Spiel";
+  const rows = state.players.map(p => {
+    const avg = p.lifetime.games > 0 ? Math.round(p.lifetime.sips / p.lifetime.games * 10) / 10 : 0;
+    return [p.name, p.sips, p.rolls, p.paschCount, p.dreiCount, p.lifetime.games, p.lifetime.sips, avg, p.lifetime.bestGame].join(";");
+  });
   const dist = "\n\nSumme;Anzahl\n" +
     Array.from({length: 11}, (_, i) => (i + 2) + ";" + state.dist[i + 2]).join("\n");
   const csv = "﻿" + head + "\n" + rows.join("\n") + dist;
@@ -974,7 +1046,8 @@ function addPlayer(){
   state.players.push({
     id: state.nextId++, name, sips: 0, rolls: 0, dreiCount: 0,
     paschCount: 0, dreiRolls: 0, given: 0,
-    emoji: EMOJIS[i % EMOJIS.length], color: COLORS[i % COLORS.length]
+    emoji: EMOJIS[i % EMOJIS.length], color: COLORS[i % COLORS.length],
+    lifetime: freshLifetime()
   });
   $("nameInput").value = "";
   render();
@@ -1022,6 +1095,7 @@ $("playerList").addEventListener("click", e => {
   if(e.target.dataset.moji) cycleEmoji(Number(e.target.dataset.moji));
 });
 $("distPanel").addEventListener("click", distClick);
+$("bannerOverlay").addEventListener("click", hideBanner);
 $("csvBtn").addEventListener("click", exportCSV);
 $("ruleAddBtn").addEventListener("click", () => {
   const t = $("ruleInput").value.trim();
@@ -1037,21 +1111,35 @@ $("ruleList").addEventListener("click", e => {
     render();
   }
 });
-$("resetStats").addEventListener("click", () => {
-  if(!confirm("Alle Schlücke, Würfe & Diagramme auf 0 setzen?")) return;
-  state.players.forEach(p => { p.sips = 0; p.rolls = 0; p.dreiCount = 0; p.paschCount = 0; p.dreiRolls = 0; p.given = 0; });
+function endGame(){
+  if(state.rollNo === 0){ alert("Es wurde in diesem Spiel noch nicht gewürfelt."); return; }
+  if(!confirm("Spiel beenden? Die aktuellen Werte werden in die Gesamtstatistik übernommen, die Runde wird danach zurückgesetzt.")) return;
+  state.players.forEach(p => {
+    if(!p.lifetime) p.lifetime = freshLifetime();
+    p.lifetime.games++;
+    p.lifetime.sips += p.sips;
+    p.lifetime.rolls += p.rolls;
+    p.lifetime.pasch += p.paschCount;
+    p.lifetime.dreiCount += p.dreiCount;
+    p.lifetime.dreiRolls += p.dreiRolls;
+    p.lifetime.given += p.given;
+    if(p.sips > p.lifetime.bestGame) p.lifetime.bestGame = p.sips;
+    p.sips = 0; p.rolls = 0; p.dreiCount = 0; p.paschCount = 0; p.dreiRolls = 0; p.given = 0;
+  });
+  state.totalGames++;
   state.log = []; state.dreiManId = null; state.turn = 0;
   state.dist = Array(13).fill(0); state.history = []; state.rollNo = 0;
   pendingDist = null; busy = false; undoSnap = null;
-  $("events").innerHTML = ""; renderDistPanel(); render();
-});
+  hideBanner(); renderDistPanel(); render();
+}
+$("endGameBtn").addEventListener("click", endGame);
 $("resetAll").addEventListener("click", () => {
-  if(!confirm("Wirklich alles löschen (auch Spieler & Regeln)?")) return;
+  if(!confirm("Wirklich alles löschen (auch Spieler, Gesamtstatistik & Regeln)?")) return;
   const settings = state.settings;
   state = freshState();
   state.settings = settings;
   pendingDist = null; busy = false; undoSnap = null;
-  $("events").innerHTML = ""; renderDistPanel(); render();
+  hideBanner(); renderDistPanel(); render();
 });
 
 // ================= PWA =================
