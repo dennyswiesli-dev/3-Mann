@@ -223,6 +223,12 @@ h2::after{content:"";flex:1;height:1px;background:linear-gradient(90deg, var(--b
 }
 .remove{background:none;border:none;color:var(--foam-dim);cursor:pointer;font-size:17px;padding:4px 6px;opacity:.6;transition:opacity .15s}
 .remove:hover{opacity:1}
+.remove:disabled{opacity:.2;cursor:not-allowed}
+.chk{width:22px;height:22px;flex:none;accent-color:var(--gold);cursor:pointer}
+.badge-live{
+  font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;background:rgba(255,193,94,.16);color:var(--gold);
+  font-size:10.5px;letter-spacing:.5px;padding:4px 8px;border-radius:8px;border:1px solid rgba(255,193,94,.4);
+}
 
 /* ---------- Statistik ---------- */
 table{width:100%;border-collapse:collapse;font-size:13.5px}
@@ -318,7 +324,7 @@ canvas{width:100%;height:170px;display:block}
   </header>
 
   <!-- Bühne -->
-  <div class="stage panel">
+  <div class="stage panel" id="stagePanel">
     <div class="dice">
       <div class="die" id="die1"></div>
       <div class="die" id="die2"></div>
@@ -329,21 +335,32 @@ canvas{width:100%;height:170px;display:block}
     <div id="distPanel"></div>
   </div>
 
-  <!-- Spieler -->
+  <!-- Spieler-Pool (Einrichtung & Rundenauswahl) -->
   <section>
-    <h2>Spieler</h2>
+    <h2>Spieler-Pool</h2>
+    <div class="panel">
+      <div id="rosterList"></div>
+      <div class="add-row">
+        <input type="text" id="poolNameInput" placeholder="Name…" maxlength="20">
+        <button class="btn btn-ghost" id="poolAddBtn">+ Zum Pool</button>
+      </div>
+      <p class="hint" id="poolHint"></p>
+      <p class="hint" id="roundStatusHint" style="display:none"></p>
+      <button class="btn btn-roll" id="startRoundBtn">🎲 Runde starten</button>
+    </div>
+  </section>
+
+  <!-- Aktuelle Runde -->
+  <section id="roundSection">
+    <h2>Aktuelle Runde</h2>
     <div class="panel">
       <div id="playerList"></div>
-      <div class="add-row">
-        <input type="text" id="nameInput" placeholder="Name…" maxlength="20">
-        <button class="btn btn-ghost" id="addBtn">+ Dazu</button>
-      </div>
-      <p class="hint">Mindestens 2 Spieler. Reihenfolge = Sitzordnung. Tipp: aufs Emoji tippen zum Wechseln. Die Spieler bleiben über mehrere Spiele erhalten.</p>
+      <p class="hint">Reihenfolge = Sitzordnung. Tipp: aufs Emoji tippen zum Wechseln, ✕ wirft nur aus dieser Runde (bleibt im Pool).</p>
     </div>
   </section>
 
   <!-- Statistik (aktuelles Spiel) -->
-  <section>
+  <section id="statSection">
     <h2>Statistik – aktuelles Spiel</h2>
     <div class="panel">
       <table>
@@ -372,7 +389,7 @@ canvas{width:100%;height:170px;display:block}
   </section>
 
   <!-- Diagramme -->
-  <section>
+  <section id="chartSection">
     <h2>Diagramme</h2>
     <div class="chart-card panel">
       <h3>Wurf-Verteilung (Summe 2–12)</h3>
@@ -428,7 +445,7 @@ canvas{width:100%;height:170px;display:block}
   </section>
 
   <!-- Verlauf -->
-  <section>
+  <section id="logSection">
     <h2>Verlauf</h2>
     <div class="panel">
       <ul class="log" id="log"></ul>
@@ -469,7 +486,9 @@ function freshLifetime(){
 }
 function freshState(){
   return {
-    players: [],       // {id,name,sips,rolls,dreiCount,paschCount,dreiRolls,given,emoji,color,lifetime}
+    roster: [],        // Spieler-Pool, dauerhaft: {id,name,emoji,color,inRound,lifetime}
+    players: [],       // aktuelle Runde: {id,name,emoji,color,sips,rolls,dreiCount,paschCount,dreiRolls,given}
+    gameActive: false, // läuft gerade eine Runde?
     turn: 0,
     dreiManId: null,
     log: [],
@@ -498,13 +517,29 @@ function load(){
     state.settings = Object.assign(freshState().settings, s.settings || {});
     if(!Array.isArray(state.dist) || state.dist.length !== 13) state.dist = Array(13).fill(0);
     if(state.totalGames == null) state.totalGames = 0;
-    state.players.forEach((p, i) => {
+
+    // Migration: altes Format kannte noch keinen Spieler-Pool
+    if(!Array.isArray(state.roster)){
+      state.roster = (state.players || []).map((p, i) => ({
+        id: p.id, name: p.name,
+        emoji: p.emoji || EMOJIS[i % EMOJIS.length],
+        color: p.color || COLORS[i % COLORS.length],
+        inRound: true,
+        lifetime: p.lifetime || freshLifetime()
+      }));
+      state.gameActive = (state.players || []).length >= 2;
+    }
+    state.roster.forEach((p, i) => {
+      if(!p.emoji) p.emoji = EMOJIS[i % EMOJIS.length];
+      if(!p.color) p.color = COLORS[i % COLORS.length];
+      if(p.inRound == null) p.inRound = true;
+      if(!p.lifetime) p.lifetime = freshLifetime();
+    });
+    state.players.forEach(p => {
       if(p.paschCount == null) p.paschCount = 0;
       if(p.dreiRolls == null) p.dreiRolls = 0;
       if(p.given == null) p.given = 0;
-      if(!p.emoji) p.emoji = EMOJIS[i % EMOJIS.length];
-      if(!p.color) p.color = COLORS[i % COLORS.length];
-      if(!p.lifetime) p.lifetime = freshLifetime();
+      delete p.lifetime; // lebt jetzt nur noch im Spieler-Pool
     });
   }catch(e){}
 }
@@ -512,6 +547,7 @@ function load(){
 // ================= Hilfen =================
 const $ = id => document.getElementById(id);
 const byId = id => state.players.find(p => p.id === id);
+const rosterById = id => state.roster.find(p => p.id === id);
 function addLog(text){ state.log.unshift(text); state.log = state.log.slice(0, 12); }
 function drink(player, n, reason){
   player.sips += n;
@@ -662,6 +698,19 @@ function renderDie(el, v){
 
 // ================= UI rendern =================
 function render(){
+  renderRosterList();
+  renderLifetimeStats();
+  renderRules();
+
+  const showGame = state.gameActive;
+  ["stagePanel", "roundSection", "statSection", "chartSection", "logSection"].forEach(id => {
+    $(id).style.display = showGame ? "" : "none";
+  });
+  $("endGameBtn").style.display = showGame ? "" : "none";
+  if(showGame) $("endGameBtn").textContent = state.rollNo > 0 ? "🏁 Spiel beenden" : "✕ Runde abbrechen";
+
+  if(!showGame){ save(); return; }
+
   const n = state.players.length;
   if(state.turn >= n) state.turn = 0;
 
@@ -670,7 +719,7 @@ function render(){
     $("turnInfo").innerHTML = "Am Zug: <b>" + esc(cur.name) + "</b>";
     $("rollBtn").disabled = !!pendingDist || busy;
   }else{
-    $("turnInfo").textContent = "Füge mindestens 2 Spieler hinzu.";
+    $("turnInfo").textContent = "Zu wenige Spieler – bitte Spiel beenden.";
     $("rollBtn").disabled = true;
   }
   $("undoBtn").style.display = undoSnap && !busy ? "block" : "none";
@@ -683,7 +732,7 @@ function render(){
       '<span class="name">' + esc(p.name) + '</span>' +
       (p.id === state.dreiManId ? '<span class="badge3">3-MANN</span>' : '') +
       '<span class="sips">' + p.sips + '<small>Schlücke</small></span>' +
-      '<button class="remove" data-del="' + p.id + '" title="Entfernen">✕</button>' +
+      '<button class="remove" data-del="' + p.id + '" title="Nur aus dieser Runde entfernen">✕</button>' +
     '</div>'
   ).join("");
 
@@ -700,13 +749,36 @@ function render(){
   ).join("");
 
   renderAwards();
-  renderLifetimeStats();
   renderDistrib();
   renderLineChart();
-  renderRules();
 
   $("log").innerHTML = state.log.map(l => "<li>" + esc(l) + "</li>").join("");
   save();
+}
+
+// ================= Spieler-Pool (Rundenauswahl) =================
+function renderRosterList(){
+  $("rosterList").innerHTML = state.roster.map(p => {
+    const activeNow = state.gameActive && state.players.some(pl => pl.id === p.id);
+    return '<div class="player">' +
+      '<input type="checkbox" class="chk" data-pick="' + p.id + '"' + (p.inRound ? " checked" : "") + '>' +
+      '<button class="pmoji" data-moji="' + p.id + '" title="Emoji wechseln">' + p.emoji + '</button>' +
+      '<span class="name">' + esc(p.name) + '</span>' +
+      (activeNow ? '<span class="badge-live">SPIELT GERADE</span>' : '') +
+      '<button class="remove" data-poolrm="' + p.id + '"' + (activeNow ? ' disabled title="Spielt gerade – erst nach Rundenende entfernbar"' : ' title="Aus dem Pool entfernen"') + '>✕</button>' +
+    '</div>';
+  }).join("");
+
+  const chosen = state.roster.filter(p => p.inRound).length;
+  $("startRoundBtn").style.display = state.gameActive ? "none" : "block";
+  $("startRoundBtn").disabled = chosen < 2;
+  $("roundStatusHint").style.display = state.gameActive ? "block" : "none";
+  if(state.gameActive){
+    $("roundStatusHint").textContent = "🎲 Runde läuft mit " + state.players.length + " Spieler" + (state.players.length === 1 ? "" : "n") + ". Änderungen an der Auswahl gelten ab der nächsten Runde.";
+  }
+  $("poolHint").textContent = state.roster.length === 0
+    ? "Noch keine Spieler im Pool. Füge unten welche hinzu – sie bleiben dauerhaft gespeichert."
+    : (chosen < 2 ? "Wähle mindestens 2 Spieler an, um eine Runde zu starten." : "Bereit! Häkchen = spielt diese Runde mit.");
 }
 
 // ================= Awards =================
@@ -741,7 +813,7 @@ function renderLifetimeStats(){
   $("totalGamesHint").textContent = state.totalGames > 0
     ? "Insgesamt " + state.totalGames + (state.totalGames === 1 ? " beendetes Spiel." : " beendete Spiele.")
     : "Noch keine beendeten Spiele.";
-  const sorted = [...state.players].sort((a, b) => b.lifetime.sips - a.lifetime.sips);
+  const sorted = [...state.roster].sort((a, b) => b.lifetime.sips - a.lifetime.sips);
   $("lifetimeBody").innerHTML = sorted.map(p => {
     const avg = p.lifetime.games > 0 ? Math.round(p.lifetime.sips / p.lifetime.games * 10) / 10 : 0;
     return "<tr><td>" + p.emoji + " " + esc(p.name) + "</td>" +
@@ -808,6 +880,25 @@ function renderRules(){
     '<div class="rule-item"><span>📜 ' + esc(r) + '</span>' +
     '<button class="remove" data-rdel="' + i + '">✕</button></div>'
   ).join("");
+}
+
+// ================= Runde starten =================
+function startRound(){
+  if(state.gameActive) return;
+  const chosen = state.roster.filter(p => p.inRound);
+  if(chosen.length < 2){ alert("Wähle mindestens 2 Spieler für die Runde aus."); return; }
+  state.players = chosen.map(p => ({
+    id: p.id, name: p.name, emoji: p.emoji, color: p.color,
+    sips: 0, rolls: 0, dreiCount: 0, paschCount: 0, dreiRolls: 0, given: 0
+  }));
+  state.gameActive = true;
+  state.turn = 0; state.dreiManId = null; state.log = [];
+  state.dist = Array(13).fill(0); state.history = []; state.rollNo = 0;
+  pendingDist = null; busy = false; undoSnap = null;
+  renderDie($("die1"), null); renderDie($("die2"), null);
+  hideBanner();
+  renderDistPanel();
+  render();
 }
 
 // ================= Wurf =================
@@ -1022,9 +1113,10 @@ function distClick(e){
 // ================= CSV-Export =================
 function exportCSV(){
   const head = "Spieler;Schlücke (aktuell);Würfe (aktuell);Pasche (aktuell);3-Mann (aktuell);Spiele gesamt;Schlücke gesamt;Ø Schlücke/Spiel;Rekord-Spiel";
-  const rows = state.players.map(p => {
-    const avg = p.lifetime.games > 0 ? Math.round(p.lifetime.sips / p.lifetime.games * 10) / 10 : 0;
-    return [p.name, p.sips, p.rolls, p.paschCount, p.dreiCount, p.lifetime.games, p.lifetime.sips, avg, p.lifetime.bestGame].join(";");
+  const rows = state.roster.map(rp => {
+    const gp = byId(rp.id);
+    const avg = rp.lifetime.games > 0 ? Math.round(rp.lifetime.sips / rp.lifetime.games * 10) / 10 : 0;
+    return [rp.name, gp ? gp.sips : 0, gp ? gp.rolls : 0, gp ? gp.paschCount : 0, gp ? gp.dreiCount : 0, rp.lifetime.games, rp.lifetime.sips, avg, rp.lifetime.bestGame].join(";");
   });
   const dist = "\n\nSumme;Anzahl\n" +
     Array.from({length: 11}, (_, i) => (i + 2) + ";" + state.dist[i + 2]).join("\n");
@@ -1038,20 +1130,33 @@ function exportCSV(){
   URL.revokeObjectURL(a.href);
 }
 
-// ================= Spielerverwaltung =================
-function addPlayer(){
-  const name = $("nameInput").value.trim();
+// ================= Spieler-Pool verwalten =================
+function addPoolPlayer(){
+  const name = $("poolNameInput").value.trim();
   if(!name) return;
-  const i = state.players.length;
-  state.players.push({
-    id: state.nextId++, name, sips: 0, rolls: 0, dreiCount: 0,
-    paschCount: 0, dreiRolls: 0, given: 0,
+  const i = state.roster.length;
+  state.roster.push({
+    id: state.nextId++, name,
     emoji: EMOJIS[i % EMOJIS.length], color: COLORS[i % COLORS.length],
-    lifetime: freshLifetime()
+    inRound: true, lifetime: freshLifetime()
   });
-  $("nameInput").value = "";
+  $("poolNameInput").value = "";
   render();
 }
+function removePoolPlayer(id){
+  if(state.gameActive && state.players.some(p => p.id === id)) return;
+  const idx = state.roster.findIndex(p => p.id === id);
+  if(idx < 0) return;
+  state.roster.splice(idx, 1);
+  render();
+}
+function togglePick(id){
+  const p = rosterById(id);
+  if(!p) return;
+  p.inRound = !p.inRound;
+  render();
+}
+// Entfernt einen Spieler nur aus der laufenden Runde (bleibt im Pool)
 function removePlayer(id){
   const idx = state.players.findIndex(p => p.id === id);
   if(idx < 0) return;
@@ -1061,9 +1166,10 @@ function removePlayer(id){
   render();
 }
 function cycleEmoji(id){
-  const p = byId(id);
-  if(!p) return;
-  p.emoji = EMOJIS[(EMOJIS.indexOf(p.emoji) + 1) % EMOJIS.length];
+  const rp = rosterById(id);
+  if(rp) rp.emoji = EMOJIS[(EMOJIS.indexOf(rp.emoji) + 1) % EMOJIS.length];
+  const gp = byId(id);
+  if(gp && rp) gp.emoji = rp.emoji;
   render();
 }
 
@@ -1088,8 +1194,16 @@ $("optRule11").addEventListener("change", e => { state.settings.rule11 = e.targe
 // ================= Events =================
 $("rollBtn").addEventListener("click", roll);
 $("undoBtn").addEventListener("click", undo);
-$("addBtn").addEventListener("click", addPlayer);
-$("nameInput").addEventListener("keydown", e => { if(e.key === "Enter") addPlayer(); });
+$("startRoundBtn").addEventListener("click", startRound);
+$("poolAddBtn").addEventListener("click", addPoolPlayer);
+$("poolNameInput").addEventListener("keydown", e => { if(e.key === "Enter") addPoolPlayer(); });
+$("rosterList").addEventListener("click", e => {
+  if(e.target.dataset.poolrm) removePoolPlayer(Number(e.target.dataset.poolrm));
+  if(e.target.dataset.moji) cycleEmoji(Number(e.target.dataset.moji));
+});
+$("rosterList").addEventListener("change", e => {
+  if(e.target.dataset.pick) togglePick(Number(e.target.dataset.pick));
+});
 $("playerList").addEventListener("click", e => {
   if(e.target.dataset.del) removePlayer(Number(e.target.dataset.del));
   if(e.target.dataset.moji) cycleEmoji(Number(e.target.dataset.moji));
@@ -1112,21 +1226,29 @@ $("ruleList").addEventListener("click", e => {
   }
 });
 function endGame(){
-  if(state.rollNo === 0){ alert("Es wurde in diesem Spiel noch nicht gewürfelt."); return; }
-  if(!confirm("Spiel beenden? Die aktuellen Werte werden in die Gesamtstatistik übernommen, die Runde wird danach zurückgesetzt.")) return;
-  state.players.forEach(p => {
-    if(!p.lifetime) p.lifetime = freshLifetime();
-    p.lifetime.games++;
-    p.lifetime.sips += p.sips;
-    p.lifetime.rolls += p.rolls;
-    p.lifetime.pasch += p.paschCount;
-    p.lifetime.dreiCount += p.dreiCount;
-    p.lifetime.dreiRolls += p.dreiRolls;
-    p.lifetime.given += p.given;
-    if(p.sips > p.lifetime.bestGame) p.lifetime.bestGame = p.sips;
-    p.sips = 0; p.rolls = 0; p.dreiCount = 0; p.paschCount = 0; p.dreiRolls = 0; p.given = 0;
-  });
-  state.totalGames++;
+  if(!state.gameActive) return;
+  const played = state.rollNo > 0;
+  const msg = played
+    ? "Spiel beenden? Die aktuellen Werte werden in die Gesamtstatistik übernommen."
+    : "Runde abbrechen? Es wurde noch nicht gewürfelt.";
+  if(!confirm(msg)) return;
+  if(played){
+    state.players.forEach(p => {
+      const rp = rosterById(p.id);
+      if(!rp) return;
+      rp.lifetime.games++;
+      rp.lifetime.sips += p.sips;
+      rp.lifetime.rolls += p.rolls;
+      rp.lifetime.pasch += p.paschCount;
+      rp.lifetime.dreiCount += p.dreiCount;
+      rp.lifetime.dreiRolls += p.dreiRolls;
+      rp.lifetime.given += p.given;
+      if(p.sips > rp.lifetime.bestGame) rp.lifetime.bestGame = p.sips;
+    });
+    state.totalGames++;
+  }
+  state.gameActive = false;
+  state.players = [];
   state.log = []; state.dreiManId = null; state.turn = 0;
   state.dist = Array(13).fill(0); state.history = []; state.rollNo = 0;
   pendingDist = null; busy = false; undoSnap = null;
@@ -1134,7 +1256,7 @@ function endGame(){
 }
 $("endGameBtn").addEventListener("click", endGame);
 $("resetAll").addEventListener("click", () => {
-  if(!confirm("Wirklich alles löschen (auch Spieler, Gesamtstatistik & Regeln)?")) return;
+  if(!confirm("Wirklich alles löschen (auch Spieler-Pool, Gesamtstatistik & Regeln)?")) return;
   const settings = state.settings;
   state = freshState();
   state.settings = settings;
