@@ -189,6 +189,9 @@ header p{margin-top:10px;color:var(--foam-dim);font-size:12px;letter-spacing:3px
 .dist-ctrl button{width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;font-size:19px;font-weight:800;background:var(--ink);color:var(--foam);box-shadow:0 4px 10px -2px rgba(0,0,0,.3)}
 .dist-ctrl button:disabled{opacity:.25;cursor:not-allowed;box-shadow:none}
 .dist-ctrl span{min-width:20px;text-align:center;font-weight:800;font-size:17px}
+.mistake-pick{background:var(--ink);color:var(--foam);border:none;border-radius:10px;padding:8px 14px;font-weight:700;font-size:13.5px;cursor:pointer;white-space:nowrap}
+.mistake-cancel{background:none;border:none;color:#5A4A38;font-weight:700;font-size:13px;padding:10px 0 0;width:100%;cursor:pointer;text-decoration:underline;margin-top:4px}
+.btn-warn{background:rgba(255,97,97,.14);color:var(--coral);border:1px solid rgba(255,97,97,.4);font-size:14px;font-weight:700;padding:11px 18px}
 
 /* ---------- Sektionen ---------- */
 section{margin-top:30px}
@@ -331,8 +334,10 @@ canvas{width:100%;height:170px;display:block}
     </div>
     <div class="turn" id="turnInfo"></div>
     <button class="btn btn-roll" id="rollBtn">Würfeln</button>
+    <button class="btn btn-warn btn-undo" id="mistakeBtn">⚠️ Fehler</button>
     <button class="btn btn-ghost btn-undo" id="undoBtn" style="display:none">↩ Letzten Wurf rückgängig</button>
     <div id="distPanel"></div>
+    <div id="mistakePanel"></div>
   </div>
 
   <!-- Spieler-Pool (Einrichtung & Rundenauswahl) -->
@@ -365,7 +370,7 @@ canvas{width:100%;height:170px;display:block}
     <div class="panel">
       <table>
         <thead>
-          <tr><th>Spieler</th><th style="text-align:right">Schlücke</th><th style="text-align:right">Würfe</th><th style="text-align:right">Pasche</th><th style="text-align:right">3-Mann</th></tr>
+          <tr><th>Spieler</th><th style="text-align:right">Schlücke</th><th style="text-align:right">Würfe</th><th style="text-align:right">Pasche</th><th style="text-align:right">3-Mann</th><th style="text-align:right">Fehler</th></tr>
         </thead>
         <tbody id="statsBody"></tbody>
       </table>
@@ -380,7 +385,7 @@ canvas{width:100%;height:170px;display:block}
       <p class="hint" id="totalGamesHint" style="margin-top:0">Noch keine beendeten Spiele.</p>
       <table>
         <thead>
-          <tr><th>Spieler</th><th style="text-align:right">Spiele</th><th style="text-align:right">Schlücke</th><th style="text-align:right">Ø/Spiel</th><th style="text-align:right">Rekord</th></tr>
+          <tr><th>Spieler</th><th style="text-align:right">Spiele</th><th style="text-align:right">Schlücke</th><th style="text-align:right">Ø/Spiel</th><th style="text-align:right">Rekord</th><th style="text-align:right">Fehler</th></tr>
         </thead>
         <tbody id="lifetimeBody"></tbody>
       </table>
@@ -482,7 +487,7 @@ const EMOJIS = ["🍺","🍻","🥴","🎲","🔥","🍀","👑","💀","🦁","
 const COLORS = ["#FFC15E","#5EC8E0","#FF6B6B","#63D9A6","#B18CF0","#F2D65C","#4FD3C4","#F2955C"];
 
 function freshLifetime(){
-  return {games: 0, sips: 0, rolls: 0, pasch: 0, dreiCount: 0, dreiRolls: 0, given: 0, bestGame: 0};
+  return {games: 0, sips: 0, rolls: 0, pasch: 0, dreiCount: 0, dreiRolls: 0, given: 0, bestGame: 0, mistakes: 0};
 }
 function freshState(){
   return {
@@ -505,6 +510,7 @@ let state = freshState();
 let pendingDist = null;
 let busy = false;
 let undoSnap = null;
+let mistakePicker = false;
 
 // ================= Persistenz =================
 function save(){ try{ localStorage.setItem("dreimann", JSON.stringify(state)); }catch(e){} }
@@ -534,11 +540,13 @@ function load(){
       if(!p.color) p.color = COLORS[i % COLORS.length];
       if(p.inRound == null) p.inRound = true;
       if(!p.lifetime) p.lifetime = freshLifetime();
+      if(p.lifetime.mistakes == null) p.lifetime.mistakes = 0;
     });
     state.players.forEach(p => {
       if(p.paschCount == null) p.paschCount = 0;
       if(p.dreiRolls == null) p.dreiRolls = 0;
       if(p.given == null) p.given = 0;
+      if(p.mistakes == null) p.mistakes = 0;
       delete p.lifetime; // lebt jetzt nur noch im Spieler-Pool
     });
   }catch(e){}
@@ -723,6 +731,8 @@ function render(){
     $("rollBtn").disabled = true;
   }
   $("undoBtn").style.display = undoSnap && !busy ? "block" : "none";
+  $("mistakeBtn").disabled = !!pendingDist || busy;
+  renderMistakePanel();
 
   // Spielerliste
   $("playerList").innerHTML = state.players.map((p, i) =>
@@ -745,7 +755,8 @@ function render(){
     '<td class="num amber">' + p.sips + "</td>" +
     '<td class="num">' + p.rolls + "</td>" +
     '<td class="num">' + p.paschCount + "</td>" +
-    '<td class="num">' + p.dreiCount + "</td></tr>"
+    '<td class="num">' + p.dreiCount + "</td>" +
+    '<td class="num">' + p.mistakes + "</td></tr>"
   ).join("");
 
   renderAwards();
@@ -802,6 +813,8 @@ function renderAwards(){
   if(dm) out.push({i: "👑", t: "3-Mann-Marathon", p: dm, v: dm.dreiRolls + " Würfe im Amt"});
   const gv = top("given");
   if(gv) out.push({i: "😈", t: "Verteiler", p: gv, v: gv.given + " verteilt"});
+  const mk = top("mistakes");
+  if(mk) out.push({i: "🤦", t: "Fehler-Meister", p: mk, v: mk.mistakes + "× vertan"});
   el.innerHTML = out.map(a =>
     '<div class="award"><span class="aico">' + a.i + "</span><span><b>" + a.t + ":</b> " +
     esc(a.p.name) + " (" + a.v + ")</span></div>"
@@ -820,7 +833,8 @@ function renderLifetimeStats(){
       '<td class="num">' + p.lifetime.games + "</td>" +
       '<td class="num amber">' + p.lifetime.sips + "</td>" +
       '<td class="num">' + avg + "</td>" +
-      '<td class="num">' + p.lifetime.bestGame + "</td></tr>";
+      '<td class="num">' + p.lifetime.bestGame + "</td>" +
+      '<td class="num">' + p.lifetime.mistakes + "</td></tr>";
   }).join("");
 }
 
@@ -889,15 +903,17 @@ function startRound(){
   if(chosen.length < 2){ alert("Wähle mindestens 2 Spieler für die Runde aus."); return; }
   state.players = chosen.map(p => ({
     id: p.id, name: p.name, emoji: p.emoji, color: p.color,
-    sips: 0, rolls: 0, dreiCount: 0, paschCount: 0, dreiRolls: 0, given: 0
+    sips: 0, rolls: 0, dreiCount: 0, paschCount: 0, dreiRolls: 0, given: 0, mistakes: 0
   }));
   state.gameActive = true;
   state.turn = 0; state.dreiManId = null; state.log = [];
   state.dist = Array(13).fill(0); state.history = []; state.rollNo = 0;
   pendingDist = null; busy = false; undoSnap = null;
+  mistakePicker = false;
   renderDie($("die1"), null); renderDie($("die2"), null);
   hideBanner();
   renderDistPanel();
+  renderMistakePanel();
   render();
 }
 
@@ -905,6 +921,8 @@ function startRound(){
 function roll(){
   if(state.players.length < 2 || pendingDist || busy) return;
   hideBanner();
+  mistakePicker = false;
+  renderMistakePanel();
   undoSnap = JSON.stringify(state);
   busy = true;
   render();
@@ -1046,9 +1064,11 @@ function undo(){
   }catch(e){ return; }
   undoSnap = null;
   pendingDist = null;
+  mistakePicker = false;
   showBanner([{t: "Letzter Wurf rückgängig gemacht.", calm: true}], 1600);
   renderDie($("die1"), null); renderDie($("die2"), null);
   renderDistPanel();
+  renderMistakePanel();
   syncSettingsUI();
   render();
 }
@@ -1110,13 +1130,46 @@ function distClick(e){
   }
 }
 
+// ================= Fehler =================
+function renderMistakePanel(){
+  const el = $("mistakePanel");
+  if(!mistakePicker){ el.innerHTML = ""; return; }
+  el.innerHTML =
+    '<div class="dist">' +
+      "<h3>Wer hat den Fehler gemacht?</h3>" +
+      "<p>Antippen = 1 Schluck Strafe:</p>" +
+      state.players.map(p =>
+        '<div class="dist-row"><span>' + p.emoji + " " + esc(p.name) + "</span>" +
+          '<button class="mistake-pick" data-mistake="' + p.id + '">1 🍺</button>' +
+        "</div>"
+      ).join("") +
+      '<button class="mistake-cancel" id="mistakeCancel">Abbrechen</button>' +
+    "</div>";
+}
+function mistakeClick(e){
+  if(!mistakePicker) return;
+  if(e.target.dataset.mistake){
+    const p = byId(Number(e.target.dataset.mistake));
+    if(p){
+      p.mistakes = (p.mistakes || 0) + 1;
+      drink(p, 1, "Fehler");
+      showBanner([{t: "Fehler! <b>" + esc(p.name) + "</b> trinkt 1.", drei: true}], 2600);
+    }
+    mistakePicker = false;
+  }else if(e.target.id === "mistakeCancel"){
+    mistakePicker = false;
+  }
+  renderMistakePanel();
+  render();
+}
+
 // ================= CSV-Export =================
 function exportCSV(){
-  const head = "Spieler;Schlücke (aktuell);Würfe (aktuell);Pasche (aktuell);3-Mann (aktuell);Spiele gesamt;Schlücke gesamt;Ø Schlücke/Spiel;Rekord-Spiel";
+  const head = "Spieler;Schlücke (aktuell);Würfe (aktuell);Pasche (aktuell);3-Mann (aktuell);Fehler (aktuell);Spiele gesamt;Schlücke gesamt;Ø Schlücke/Spiel;Rekord-Spiel;Fehler gesamt";
   const rows = state.roster.map(rp => {
     const gp = byId(rp.id);
     const avg = rp.lifetime.games > 0 ? Math.round(rp.lifetime.sips / rp.lifetime.games * 10) / 10 : 0;
-    return [rp.name, gp ? gp.sips : 0, gp ? gp.rolls : 0, gp ? gp.paschCount : 0, gp ? gp.dreiCount : 0, rp.lifetime.games, rp.lifetime.sips, avg, rp.lifetime.bestGame].join(";");
+    return [rp.name, gp ? gp.sips : 0, gp ? gp.rolls : 0, gp ? gp.paschCount : 0, gp ? gp.dreiCount : 0, gp ? gp.mistakes : 0, rp.lifetime.games, rp.lifetime.sips, avg, rp.lifetime.bestGame, rp.lifetime.mistakes].join(";");
   });
   const dist = "\n\nSumme;Anzahl\n" +
     Array.from({length: 11}, (_, i) => (i + 2) + ";" + state.dist[i + 2]).join("\n");
@@ -1209,6 +1262,12 @@ $("playerList").addEventListener("click", e => {
   if(e.target.dataset.moji) cycleEmoji(Number(e.target.dataset.moji));
 });
 $("distPanel").addEventListener("click", distClick);
+$("mistakeBtn").addEventListener("click", () => {
+  if(pendingDist || busy) return;
+  mistakePicker = !mistakePicker;
+  renderMistakePanel();
+});
+$("mistakePanel").addEventListener("click", mistakeClick);
 $("bannerOverlay").addEventListener("click", hideBanner);
 $("csvBtn").addEventListener("click", exportCSV);
 $("ruleAddBtn").addEventListener("click", () => {
@@ -1243,6 +1302,7 @@ function endGame(){
       rp.lifetime.dreiCount += p.dreiCount;
       rp.lifetime.dreiRolls += p.dreiRolls;
       rp.lifetime.given += p.given;
+      rp.lifetime.mistakes += p.mistakes;
       if(p.sips > rp.lifetime.bestGame) rp.lifetime.bestGame = p.sips;
     });
     state.totalGames++;
@@ -1252,7 +1312,8 @@ function endGame(){
   state.log = []; state.dreiManId = null; state.turn = 0;
   state.dist = Array(13).fill(0); state.history = []; state.rollNo = 0;
   pendingDist = null; busy = false; undoSnap = null;
-  hideBanner(); renderDistPanel(); render();
+  mistakePicker = false;
+  hideBanner(); renderDistPanel(); renderMistakePanel(); render();
 }
 $("endGameBtn").addEventListener("click", endGame);
 $("resetAll").addEventListener("click", () => {
@@ -1261,7 +1322,8 @@ $("resetAll").addEventListener("click", () => {
   state = freshState();
   state.settings = settings;
   pendingDist = null; busy = false; undoSnap = null;
-  hideBanner(); renderDistPanel(); render();
+  mistakePicker = false;
+  hideBanner(); renderDistPanel(); renderMistakePanel(); render();
 });
 
 // ================= PWA =================
